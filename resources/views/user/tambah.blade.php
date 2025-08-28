@@ -73,12 +73,15 @@ document.addEventListener('DOMContentLoaded', function() {
         deptSelect.addEventListener('change', toggleProduksiFields);
     });
 
-    $(function () {
-            $("#tanggal_lahir").datepicker({
-                changeMonth: true,
-                changeYear: true,
-            });
-        });
+$(function () {
+    $("#tanggal_lahir").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        yearRange: "1960:c", // dari 1960 sampai tahun sekarang
+        maxDate: 0           // gak boleh lebih dari hari ini
+    });
+});
+
 
     $(function () {
             $("#tmt_cpns").datepicker({

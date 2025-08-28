@@ -36,6 +36,24 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<script>
+    $(function () {
+        $("#gol").selectize();
+    });
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var toastElement = document.querySelector('.toast');
+        if (toastElement) {
+            var toast = new bootstrap.Toast(toastElement, { delay: 3000 }); // 5000 ms = 5 detik
+            toast.show();
+        }
+    });
+    
+</script> 
+
 @endsection
 
 @section('isi')
@@ -54,15 +72,26 @@ document.addEventListener('DOMContentLoaded', function() {
 @endif
 
 
-<div class="pagetitle">
-    <h1>Profile {{ $user->nama }}</h1>
-    <nav>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url('dashboard') }}">Home</a></li>
-            <li class="breadcrumb-item active">Profile</li>
-        </ol>
-    </nav>
-</div><!-- End Page Title -->
+<div class="pagetitle d-flex justify-content-between align-items-center">
+    <div>
+        <h1>Profile {{ $user->nama }}</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url('dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item active">Profile</li>
+            </ol>
+        </nav>
+    </div>
+    
+    {{-- Tombol Promosikan --}}
+      <a href="#" class="btn btn-primary" 
+        data-toggle="modal" 
+        data-target="#promosiModal{{ $nilaiUser->id }}">
+          <i class="bi bi-arrow-up-circle"></i> Promosikan
+      </a>
+      
+</div>
+
 
 <section class="section dashboard">
     <div class="row">
@@ -76,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
               <h2>{{ $user->nama }}</h2>
               <h3>{{ $user->nip }}</h3>
-              <div class="d-flex flex-column align-items-center mt-2" style="gap:5px;">
+              <div class="d-flex flex-column align-items-center" style="gap:5px;">
             <div style="display:flex; align-items:center; gap:8px; font-size:16px; color:#007bff;">
                 <i class="bi bi-telephone-fill"></i> <!-- pastikan Bootstrap Icons tersedia -->
                 <span>{{ $user->no_hp }}</span>
@@ -86,8 +115,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span>{{ $user->email }}</span>
             </div>
         </div>
+        {{-- <div class="mt-3 w-100 text-center">
+        <a href="#" 
+           class="btn btn-primary w-100">
+           <i class="bi bi-arrow-up-circle"></i> Promosikan
+        </a>
+    </div> --}}
             </div>
           </div>
+
+          <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title text-center">Nilai Kinerja {{ $user->nama }} Tahun {{ \Carbon\Carbon::now()->year }}</h5>
+            <!-- Konten tambahan -->
+            <div style="height: 257px; margin-left: 0; padding: 20px;">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Absensi</span>
+                            <span><strong>{{ $nilaiUser->absen ?? '-' }}%</strong></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Prestasi</span>
+                            <span><strong>{{ $nilaiUser->prestasi ?? '-' }}</strong></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Penilaian Kinerja</span>
+                            <span><strong>{{ $nilaiUser->kinerja ?? '-' }}</strong></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Skor</span>
+                            <span><strong>{{ $nilaiSAW ?? '-' }}</strong></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between bg-light">
+                            <span>Kategori</span>
+                            <strong class="{{ $kategoriClass }}">{{ $kategoriUser ?? '-' }}</strong>
+                        </li>
+                    </ul>
+                </div>
+
+                 {{-- <div class="text-center mt-1">
+                  <a href="#" 
+                    class="btn btn-success">
+                    <i class="bi bi-award"></i> Promosikan
+                  </a>
+              </div> --}}
+
+        </div>
+        
+    </div>
 
         </div>
 
@@ -115,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <div class="tab-pane fade show active profile-overview" id="profile-overview">
                   <h5 class="card-title">About</h5>
-                  <p class="small fst-italic">
+                  <p class="fst-italic">
                       {{ ($user->gelar_depan ? $user->gelar_depan . ' ' : '') . $user->nama . ($user->gelar_belakang ? ', ' . $user->gelar_belakang : '') }}  
                       adalah Pegawai Negeri Sipil ({{ $user->status_pns == 'C' ? 'Calon PNS' : 'PNS' }}) dengan jabatan {{ $user->jenis_jabatan }} - {{ $user->jabatan_nama }}.  
                       Memiliki pendidikan {{ $user->tingkat_pendidikan }} ({{ $user->pend }}). Golongan: {{ $user->gol }}.  
@@ -124,58 +199,58 @@ document.addEventListener('DOMContentLoaded', function() {
 
                   <h5 class="card-title">Profile Details</h5>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label ">Full Name</div>
                     <div class="col-lg-9 col-md-8"> {{ ($user->gelar_depan ? $user->gelar_depan . ' ' : '') . $user->nama . ($user->gelar_belakang ? ', ' . $user->gelar_belakang : '') }}</div>
                   </div>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label">NIK</div>
                     <div class="col-lg-9 col-md-8">{{ $user->nik }}</div>
                   </div>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label">Tempat, Tanggal Lahir</div>
                     <div class="col-lg-9 col-md-8">{{ $user->tempat_lahir }}, {{ \Carbon\Carbon::parse($user->tanggal_lahir)->translatedFormat('d F Y') }} ({{ \Carbon\Carbon::parse($user->tanggal_lahir)->age }} Tahun)</div>
                   </div>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label">Jenis Kelamin</div>
                     <div class="col-lg-9 col-md-8">{{ $user->jenis_kelamin == 'L' ? 'Laki-laki' : ($user->jenis_kelamin == 'P' ? 'Perempuan' : '-') }}</div>
                   </div>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label">Agama</div>
                     <div class="col-lg-9 col-md-8">{{ $user->agama }}</div>
                   </div>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label">Status Pernikahan</div>
                     <div class="col-lg-9 col-md-8">{{ $user->status_pernikahan }}</div>
                   </div>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label">Status CPNS PNS</div>
                     <div class="col-lg-9 col-md-8">{{ $user->status_pns == 'C' ? 'CPNS' : ($user->jenis_kelamin == 'P' ? 'PNS' : '-') }}</div>
                   </div>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label">No SK CPNS</div>
                     <div class="col-lg-9 col-md-8">{{ $user->no_sk_cpns }}</div>
                   </div>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label">Tanggal SK CPNS</div>
                     <div class="col-lg-9 col-md-8">{{ $user->tgl_sk_cpns ? \Carbon\Carbon::parse($user->tgl_sk_cpns)->translatedFormat('d F Y') : '-' }}
 </div>
                   </div>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label">Golongan</div>
                     <div class="col-lg-9 col-md-8">{{ $user->gol }}</div>
                   </div>
 
-                  <div class="row">
+                  <div class="row mb-3">
                     <div class="col-lg-3 col-md-4 label">Jabatan</div>
                     <div class="col-lg-9 col-md-8">Jabatan {{ $user->jenis_jabatan }} - {{ $user->jabatan_nama }}</div>
                   </div>
@@ -210,6 +285,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         @if($penilaian->isEmpty())
                             <p>Belum ada penilaian.</p>
                         @else
+                        {{-- <div class="d-flex justify-content-end mb-2">
+                            <a href="#" class="btn btn-primary">
+                                <i class="bi bi-arrow-up-circle"></i> Promosikan
+                            </a>
+                        </div> --}}
                             <div class="table-responsive">
                                 <table class="table table-hover text-center" id="dasborTable">
                                     <thead>
@@ -268,7 +348,50 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
       
+      
 </section>
 
-
 @endsection
+<div class="modal fade" id="promosiModal{{ $nilaiUser->id }}" tabindex="-1" 
+     role="dialog" aria-labelledby="promosiModalLabel{{ $nilaiUser->id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form action="{{ route('spk.promosi', $nilaiUser->user_id) }}" method="POST">
+            @csrf
+            @method('PUT')
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Promosi Pegawai - {{ $nilaiUser->user->nama }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="gol" class="form-label">Golongan <span class="text-danger">*</span></label>
+                        <select id="gol" name="gol" class="form-control @error('gol') is-invalid @enderror" data-live-search="true">
+                            <option value="">-- Pilih Golongan --</option>
+                            @php
+                                $golongan = ['I/a','I/b','I/c','I/d',
+                                            'II/a','II/b','II/c','II/d',
+                                            'III/a','III/b','III/c','III/d',
+                                            'IV/a','IV/b','IV/c','IV/d','IV/e'];
+                            @endphp
+
+                            @foreach($golongan as $g)
+                                <option value="{{ $g }}" {{ $nilaiUser->user->gol == $g ? 'selected' : '' }}>{{ $g }}</option>
+                            @endforeach
+                        </select>
+                        @error('gol')
+                            <div class="text-danger mt-2">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

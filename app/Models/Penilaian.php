@@ -15,4 +15,9 @@ class Penilaian extends Model
     {
         return $this->belongsTo(User::class, 'user_id'); // foreign key produk_id
     }
+
+    public function olehUser()
+    {
+        return $this->belongsTo(User::class, 'oleh', 'id');
+    }
 }

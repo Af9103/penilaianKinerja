@@ -27,12 +27,12 @@
                 @if(auth()->user()->role !== 'PNS')
                     <li class="nav-item">
                         @if(auth()->user()->role === 'Admin')
-                            <a class="nav-link {{ Request::is('penilaian/hasil') ? 'active' : '' }}" 
+                            <a class="nav-link {{ Request::is('penilaian/hasil') || Request::is('penilaian') ? 'active' : '' }}" 
                             href="/penilaian/hasil">
                                 Penilaian Pegawai
                             </a>
                         @elseif(auth()->user()->role === 'Atasan')
-                            <a class="nav-link {{ Request::is('penilaian') ? 'active' : '' }}" 
+                            <a class="nav-link {{ Request::is('penilaian') || Request::is('penilaian/hasil') ? 'active' : '' }}" 
                             href="/penilaian">
                                 Penilaian Pegawai
                             </a>

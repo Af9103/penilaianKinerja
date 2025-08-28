@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 27, 2025 at 06:28 AM
+-- Generation Time: Aug 28, 2025 at 08:25 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -107,6 +107,7 @@ CREATE TABLE `penilaian` (
   `absen` decimal(5,2) NOT NULL,
   `prestasi` int(11) DEFAULT NULL,
   `kinerja` int(11) DEFAULT NULL,
+  `oleh` bigint(20) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -115,20 +116,21 @@ CREATE TABLE `penilaian` (
 -- Dumping data for table `penilaian`
 --
 
-INSERT INTO `penilaian` (`id`, `user_id`, `tahun`, `absen`, `prestasi`, `kinerja`, `created_at`, `updated_at`) VALUES
-(1, 2, 2025, 90.10, 8, 7, '2025-08-25 22:19:27', '2025-08-25 22:19:27'),
-(2, 3, 2021, 99.19, 1, 7, '2025-08-25 22:26:57', '2025-08-25 22:26:57'),
-(3, 3, 2022, 90.10, 9, 9, '2025-08-25 22:27:13', '2025-08-25 22:27:13'),
-(4, 3, 2023, 91.10, 7, 7, '2025-08-25 22:27:46', '2025-08-25 22:27:46'),
-(5, 3, 2024, 98.71, 7, 7, '2025-08-25 22:28:18', '2025-08-25 22:28:18'),
-(6, 3, 2025, 99.19, 7, 7, '2025-08-25 22:28:30', '2025-08-25 22:28:30'),
-(7, 4, 2021, 99.91, 7, 7, '2025-08-25 22:28:41', '2025-08-25 22:28:41'),
-(8, 4, 2022, 98.99, 8, 6, '2025-08-25 22:28:57', '2025-08-25 22:28:57'),
-(9, 4, 2023, 97.11, 7, 7, '2025-08-25 22:29:12', '2025-08-25 22:29:12'),
-(10, 4, 2024, 98.00, 8, 8, '2025-08-25 22:29:24', '2025-08-25 22:29:24'),
-(11, 4, 2025, 89.11, 1, 1, '2025-08-25 22:29:36', '2025-08-26 18:37:48'),
-(12, 5, 2024, 98.91, 8, 8, '2025-08-25 22:32:55', '2025-08-25 22:32:55'),
-(13, 5, 2025, 99.91, 9, 9, '2025-08-25 22:33:08', '2025-08-25 22:33:08');
+INSERT INTO `penilaian` (`id`, `user_id`, `tahun`, `absen`, `prestasi`, `kinerja`, `oleh`, `created_at`, `updated_at`) VALUES
+(1, 2, 2025, 90.10, 8, 7, NULL, '2025-08-25 22:19:27', '2025-08-25 22:19:27'),
+(2, 3, 2021, 99.19, 1, 7, NULL, '2025-08-25 22:26:57', '2025-08-25 22:26:57'),
+(3, 3, 2022, 90.10, 9, 9, NULL, '2025-08-25 22:27:13', '2025-08-25 22:27:13'),
+(4, 3, 2023, 91.10, 7, 7, NULL, '2025-08-25 22:27:46', '2025-08-25 22:27:46'),
+(5, 3, 2024, 98.71, 7, 7, NULL, '2025-08-25 22:28:18', '2025-08-25 22:28:18'),
+(7, 4, 2021, 99.91, 7, 7, NULL, '2025-08-25 22:28:41', '2025-08-25 22:28:41'),
+(8, 4, 2022, 98.99, 8, 6, NULL, '2025-08-25 22:28:57', '2025-08-25 22:28:57'),
+(9, 4, 2023, 97.11, 7, 7, NULL, '2025-08-25 22:29:12', '2025-08-25 22:29:12'),
+(10, 4, 2024, 98.00, 8, 8, NULL, '2025-08-25 22:29:24', '2025-08-25 22:29:24'),
+(11, 4, 2025, 89.11, 1, 1, NULL, '2025-08-25 22:29:36', '2025-08-26 18:37:48'),
+(12, 5, 2024, 98.91, 8, 8, NULL, '2025-08-25 22:32:55', '2025-08-25 22:32:55'),
+(13, 5, 2025, 99.91, 9, 9, NULL, '2025-08-25 22:33:08', '2025-08-25 22:33:08'),
+(15, 3, 2025, 99.10, 9, 9, NULL, '2025-08-27 19:59:22', '2025-08-27 19:59:22'),
+(17, 9, 2025, 80.10, 5, 5, 2, '2025-08-28 05:57:28', '2025-08-28 05:57:28');
 
 -- --------------------------------------------------------
 
@@ -214,12 +216,13 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `nip`, `nama`, `gelar_depan`, `gelar_belakang`, `tempat_lahir`, `tanggal_lahir`, `jenis_kelamin`, `agama`, `status_pernikahan`, `nik`, `no_hp`, `status_pns`, `no_sk_cpns`, `tgl_sk_cpns`, `tmt_cpns`, `tmt_pns`, `gol`, `jenis_jabatan`, `jabatan_nama`, `tingkat_pendidikan`, `pend`, `email`, `password`, `role`, `foto`, `remember_token`, `created_at`, `updated_at`) VALUES
-(2, '123', 'Albin', NULL, 'S.Tr.Kom', 'Bekasi', '2003-01-09', 'L', 'Islam', 'Belum Menikah', '3216060901030026', '123', 'C', '100.3.3.2/895 TAHUN 2025', '2025-06-03', '2025-08-13', '2025-08-26', 'II/c', 'Struktural', 'FASILITATOR PEMERINTAHAN', 'D4', 'Sistem Informasi', 'albinf341@gmail.com', '$2y$10$A.Y5iQliYoUkwBccXJrf.ez5JsIE0m8.K0.o7AodNGA2SQ9dFlGSe', 'Admin', 'EoTOcpWK1mvuz0LFZU1k3cWNLpF1B0iZu16rGUFx.jpg', NULL, '2025-08-25 20:34:48', '2025-08-26 04:30:30'),
-(3, '200004062025052006', 'RATNAWATI', NULL, 'S.Sos.', 'Wakatobi', '2000-04-06', 'P', 'Islam', 'Menikah', '7407084604000001', '081248282375', 'P', '100.3.3.2/895 TAHUN 2025', NULL, '2019-05-28', '2020-05-08', 'III/a', 'Pelaksana', 'Fasilitator', 'S1', 'Ilmu Politik', 'ratnawatirat49@gmail.com', '$2y$10$k7T2aoX/vLOkSB4jkfKQ6eOSjuZKL5AE6Y1Rh6LTprwm6ASlAG2K.', 'PNS', NULL, NULL, '2025-08-25 22:22:26', '2025-08-25 22:22:26'),
+(2, '123', 'Albin', NULL, 'S.Tr.Kom', 'Bekasi', '2003-01-09', 'L', 'Islam', 'Belum Menikah', '3216060901030026', '123', 'C', '100.3.3.2/895 TAHUN 2025', '2025-06-03', '2025-08-13', '2025-08-26', 'II/c', 'Struktural', 'FASILITATOR PEMERINTAHAN', 'D4', 'Sistem Informasi', 'albinf341@gmail.com', '$2y$10$A.Y5iQliYoUkwBccXJrf.ez5JsIE0m8.K0.o7AodNGA2SQ9dFlGSe', 'Atasan', 'EoTOcpWK1mvuz0LFZU1k3cWNLpF1B0iZu16rGUFx.jpg', NULL, '2025-08-25 20:34:48', '2025-08-26 04:30:30'),
+(3, '200004062025052006', 'RATNAWATI', NULL, 'S.Sos.', 'Wakatobi', '2000-04-06', 'P', 'Islam', 'Menikah', '7407084604000001', '081248282375', 'P', '100.3.3.2/895 TAHUN 2025', NULL, '2019-05-28', '2021-05-08', 'III/a', 'Pelaksana', 'Fasilitator', 'S1', 'Ilmu Politik', 'ratnawatirat49@gmail.com', '$2y$10$k7T2aoX/vLOkSB4jkfKQ6eOSjuZKL5AE6Y1Rh6LTprwm6ASlAG2K.', 'PNS', NULL, NULL, '2025-08-25 22:22:26', '2025-08-25 22:22:26'),
 (4, '199805082025052003', 'WA ODE HEDIYATI MAHARANI', 'dr.', 'S.Ked', 'Wakatobi', '1998-05-08', 'P', 'Islam', 'Menikah', '7407014805980001', '081241920126', 'P', '01/BKDD/2014', NULL, '2014-10-01', '2019-08-08', 'I/c', 'Fungsional', 'Dokter Ahli Pertama', 'S2', 'Profesi Dokter', 'hedimhrn@gmail.com', '$2y$10$nQD9wyxDIIAT86plluEID.VI3b45P5aaPOaDYfeh85hc/QtdCmGBy', 'Atasan', NULL, NULL, '2025-08-25 22:26:05', '2025-08-25 22:26:05'),
 (5, '200306102025051001', 'HIKMAL AKBAR', 'dr.', 'S.Ked', 'Wakatobi', '1999-04-01', 'L', 'Islam', 'Menikah', '7407060104950001', '085342724744', 'P', '100.3.3.2/895 TAHUN 2025', NULL, '2023-05-01', '2024-01-01', 'III/b', 'Struktural', 'Dokter Ahli Pertama', 'S2', 'Profesi Dokter', 'apriadinlaode@gmail.com', '$2y$10$jGSqRvvvJq/l8wAjD46O.uylzdAaMd5Z1JIayA3Qv9FOW4vUzVl4G', 'PNS', NULL, NULL, '2025-08-25 22:32:42', '2025-08-25 22:32:42'),
 (6, '1272181', 'bmsdnmb', 'dr.', 'S.Ked', 'Wakatobi', '1999-04-01', 'L', 'Islam', 'Belum Menikah', '1111111111111111', '09189188', 'C', '100.3.3.2/895 TAHUN 2025', NULL, '2025-05-01', NULL, 'IV/c', 'Struktural', 'jsdwkd', 'SMA/SMK', 'adnnjads', 'gag@gmail.com', '$2y$10$qdqPIuPEkw/pJFAmDQ/F4uESqP22laVVAxjhEH5fqq7ncDjo9H6Zq', 'PNS', NULL, NULL, '2025-08-25 23:02:21', '2025-08-25 23:02:21'),
-(7, '12721816161', 'bmsdnmb', 'dr.', 'S.Ked', 'Wakatobi', '1999-04-01', 'L', 'Hindu', 'Menikah', '1111111111111112', '09189188121', 'C', '100.3.3.2/895 TAHUN 2025', NULL, '2025-05-01', NULL, 'II/a', 'Struktural', 'jsdwkd', 'D3', 'adnnjads', 'gag11@gmail.com', '$2y$10$eYYGNc1CNo0cfl41G4LWyuovSV/qu/9oH2VGyVGk5YU.vF9CFFaHq', 'Admin', NULL, NULL, '2025-08-26 07:10:44', '2025-08-26 07:10:44');
+(7, '12721816161', 'bmsdnmb', 'dr.', 'S.Ked', 'Wakatobi', '1999-04-01', 'L', 'Hindu', 'Menikah', '1111111111111112', '09189188121', 'C', '100.3.3.2/895 TAHUN 2025', NULL, '2025-05-01', NULL, 'II/a', 'Struktural', 'jsdwkd', 'D3', 'adnnjads', 'gag11@gmail.com', '$2y$10$eYYGNc1CNo0cfl41G4LWyuovSV/qu/9oH2VGyVGk5YU.vF9CFFaHq', 'Admin', NULL, NULL, '2025-08-26 07:10:44', '2025-08-26 07:10:44'),
+(9, '3221', 'contoh', NULL, NULL, 'Jakarta', '2002-08-07', 'P', 'Islam', 'Belum Menikah', '3333333333333333', '0918821', 'P', '100.3.3.2/895 TAHUN 2025', '2024-08-01', '2025-08-01', NULL, 'II/a', 'Struktural', 'FASILITATOR PEMERINTAHAN', 'S1', 'Ilmu Politik', 'contoh@gmail.com', '$2y$10$QmROzrEL4wTmP7qYoW0ChOYQSZEVLucCHXjIPEYsxX.TDZqLjQTya', 'PNS', NULL, NULL, '2025-08-27 22:18:48', '2025-08-27 22:18:48');
 
 --
 -- Indexes for dumped tables
@@ -304,7 +307,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `penilaian`
 --
 ALTER TABLE `penilaian`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
@@ -322,7 +325,7 @@ ALTER TABLE `tmt_pns`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

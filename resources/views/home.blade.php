@@ -9,7 +9,7 @@
   <meta content="" name="keywords">
 
   <!-- Favicons -->
-  <link href="assets/img/k-logo.jpg" rel="icon">
+  <link href="assets/img/logo.png" rel="icon">
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -79,6 +79,7 @@
       transition: all 0.3s ease;
       background: #28a745;
       border: none;
+      color: #fff;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
     }
 

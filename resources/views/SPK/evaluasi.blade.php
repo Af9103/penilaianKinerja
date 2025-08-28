@@ -8,7 +8,7 @@
             "language": {
                 "emptyTable": "tidak ada data"
             },
-            "lengthMenu": [5, 10, 15, 20, 25],
+            "lengthMenu": [10, 20, 50],
         });
     });
 

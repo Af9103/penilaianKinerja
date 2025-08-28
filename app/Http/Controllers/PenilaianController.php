@@ -43,6 +43,7 @@ class PenilaianController extends Controller
             'prestasi' => $request->prestasi,
             'kinerja' => $request->kinerja,
             'tahun' => date('Y'),
+            'oleh' => auth()->user()->id,
         ]);
 
         return redirect()->back()->with('success', 'Penilaian berhasil disimpan!');
@@ -54,25 +55,22 @@ class PenilaianController extends Controller
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
-        // Ambil tahun dari request (kalau ada), kalau tidak pakai tahun sekarang
         $selectedYear = $request->input('tahun', $currentYear);
+        $kategori = $request->input('kategori');
 
-        // Ambil data penilaian berdasarkan tahun + relasi user
-        $hasils = Penilaian::with('user')
-            ->where('tahun', $selectedYear) // filter berdasarkan tahun
+        $hasils = Penilaian::with('user', 'olehuser')
+            ->where('tahun', $selectedYear)
             ->get();
 
-        // Bobot tiap kriteria
+        // Bobot
         $bobot = BobotKriteria::pluck('bobot', 'Kriteria')->toArray();
 
-        // Skala maksimum tetap
         $max = [
             'absen' => 100,
             'prestasi' => 10,
             'kinerja' => 10,
         ];
 
-        // Hitung nilai SAW
         foreach ($hasils as $hasil) {
             $nilai = 0;
             $nilai += ($hasil->absen / $max['absen']) * $bobot['absen'];
@@ -90,11 +88,17 @@ class PenilaianController extends Controller
             }
         }
 
-        if ($request->ajax()) {
-            return response()->json($hasils); // kirim JSON ke frontend
+        // Filter berdasarkan kategori kalau ada
+        if ($kategori) {
+            $hasils = $hasils->filter(function ($item) use ($kategori) {
+                return $item->kategori === $kategori;
+            })->values();
         }
 
-        // Kirim data ke view
+        if ($request->ajax()) {
+            return response()->json($hasils);
+        }
+
         return view('penilaian.hasil', [
             'tittle' => 'Hasil Penilaian | SIPEKA',
             'hasils' => $hasils,
@@ -106,8 +110,9 @@ class PenilaianController extends Controller
 
     public function histori($user_id)
     {
-        $hasils = Penilaian::where('user_id', $user_id)
-            ->orderBy('created_at', 'desc')
+        $hasils = Penilaian::with('olehUser')
+            ->where('user_id', $user_id)
+            ->orderBy('tahun', 'desc')
             ->get();
 
         $bobot = [

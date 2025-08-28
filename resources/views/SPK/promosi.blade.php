@@ -8,7 +8,7 @@
             "language": {
                 "emptyTable": "tidak ada data"
             },
-            "lengthMenu": [5, 10, 15, 20, 25],
+            "lengthMenu": [10, 20, 50],
         });
     });
 
@@ -54,10 +54,15 @@ $(document).on("click", ".btn-show-nilai", function() {
     // set judul modal
     $("#namaPegawai").text(nama);
 
-    // Kosongkan dulu tabel
-    $("#nilaiBody").html('<tr><td colspan="5" class="text-center">Loading...</td></tr>');
+    // kalau sudah pernah ada DataTable, destroy dulu
+    if ($.fn.DataTable.isDataTable("#historiTable")) {
+        $("#historiTable").DataTable().clear().destroy();
+    }
 
-    // Panggil route yang ambil histori penilaian
+    // Kosongkan body
+    $("#nilaiBody").html('<tr><td colspan="6" class="text-center">Loading...</td></tr>');
+
+    // Panggil route histori
     $.ajax({
         url: "/penilaian/histori/" + userId,
         type: "GET",
@@ -66,38 +71,48 @@ $(document).on("click", ".btn-show-nilai", function() {
             if (res.length > 0) {
                 $.each(res, function(i, val) {
                     rows += "<tr>" +
-                                "<td>" + val.tahun + "</td>" +
-                                "<td>" + val.absen + "%</td>" +
-                                "<td>" + val.prestasi + "</td>" +
-                                "<td>" + val.nilai_saw + "</td>" +
-                                "<td>" + 
-                                "<span class='badge " + 
-                                    (val.kategori == 'Baik' ? "bg-success" : 
-                                    (val.kategori == 'Cukup' ? "bg-warning text-dark" : "bg-danger")) + 
-                                "'>" + val.kategori + "</span>" + 
-                            "</td>"
+                                "<td class='text-center'>" + val.tahun + "</td>" +
+                                    "<td class='text-center'>" + val.absen + "%</td>" +
+                                    "<td class='text-center'>" + val.prestasi + "</td>" +
+                                    "<td class='text-center'>" + val.kinerja + "</td>" +
+                                    "<td class='text-center'>" + val.nilai_saw + "</td>" +
+                                    "<td class='text-center'>" + 
+                                        "<span class='badge " + 
+                                            (val.kategori == 'Baik' ? "bg-success" : 
+                                            (val.kategori == 'Cukup' ? "bg-warning text-dark" : "bg-danger")) + 
+                                        "'>" + val.kategori + "</span>" + 
+                                    "</td>" +
+                                    "<td class='text-center'>" + (val.oleh_user ? val.oleh_user.nama : '-') + "</td>"
                             "</tr>";
                 });
                 $("#nilaiBody").html(rows);
             } else {
-                $("#nilaiBody").html('<tr><td colspan="5" class="text-center">Belum ada data</td></tr>');
+                $("#nilaiBody").html('<tr><td colspan="6" class="text-center">Belum ada data</td></tr>');
             }
 
-            // Inisialisasi DataTable setelah data siap
+            // re-init DataTable setelah isi ulang
             $("#historiTable").DataTable({
-                destroy: true, // supaya bisa di re-init
                 autoWidth: false,
-                "language": {
-                    "emptyTable": "tidak ada data"
+                destroy: true,
+                language: {
+                    emptyTable: "tidak ada data"
                 },
-                "lengthMenu": [4, 10, 15, 20, 25]
+                lengthMenu: [4, 10, 15, 20, 25],
+                order: [[0, "desc"]]
             });
         },
         error: function() {
-            $("#nilaiBody").html('<tr><td colspan="5" class="text-center text-danger">Gagal mengambil data</td></tr>');
+            $("#nilaiBody").html('<tr><td colspan="6" class="text-center text-danger">Gagal mengambil data</td></tr>');
         }
     });
 });
+
+</script>
+
+<script>
+    $(function () {
+        $("#gol").selectize();
+    });
 
 </script>
 
@@ -310,12 +325,14 @@ $(document).on("click", ".btn-show-nilai", function() {
                     <th>Tahun</th>
                     <th>Absensi</th>
                     <th>Prestasi</th>
+                    <th>Penilaian Kinerja</th>
                     <th>Nilai SAW</th>
                     <th>Kategori</th>
+                    <th>Dinilai Oleh</th>
                 </tr>
             </thead>
             <tbody id="nilaiBody">
-                <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                <tr><td colspan="6" class="text-center">Loading...</td></tr>
             </tbody>
         </table>
       </div>

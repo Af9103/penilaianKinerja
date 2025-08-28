@@ -6,6 +6,7 @@ use App\Models\BobotKriteria;
 use App\Models\Penilaian;
 use App\Models\TmtPns;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -17,10 +18,46 @@ class UserController extends Controller
         // Fetch all users from the database
         $search = $request->input('search');
 
+        $currentYear = Carbon::now()->year;
+
+        // Ambil data penilaian berdasarkan tahun + relasi user
+        $hasils = Penilaian::with('user')
+            ->where('tahun', $currentYear)
+            ->get();
+
+        // Bobot tiap kriteria
+        $bobot = BobotKriteria::pluck('bobot', 'Kriteria')->toArray();
+
+        // Skala maksimum tetap
+        $max = [
+            'absen' => 100,
+            'prestasi' => 10,
+            'kinerja' => 10,
+        ];
+
+        // Hitung nilai SAW
+        foreach ($hasils as $hasil) {
+            $nilai = 0;
+            $nilai += ($hasil->absen / $max['absen']) * $bobot['absen'];
+            $nilai += ($hasil->prestasi / $max['prestasi']) * $bobot['prestasi'];
+            $nilai += ($hasil->kinerja / $max['kinerja']) * $bobot['kinerja'];
+
+            $hasil->nilai_saw = round($nilai, 3);
+
+            if ($nilai < 0.4) {
+                $hasil->kategori = "Kurang";
+            } elseif ($nilai < 0.7) {
+                $hasil->kategori = "Cukup";
+            } else {
+                $hasil->kategori = "Baik";
+            }
+        }
+
         // Pass the data to the view
         return view('user.index', [
             'tittle' => 'Daftar Pegawai | SIPEKA',
-            'users' => User::paginate(8)->withQueryString()
+            'users' => User::paginate(8)->withQueryString(),
+            'hasils' => $hasils,
         ]);
     }
 
@@ -60,6 +97,10 @@ class UserController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
+        $validatedData['tanggal_lahir'] = Carbon::createFromFormat('m/d/Y', $request->tanggal_lahir)->format('Y-m-d');
+        $validatedData['tgl_sk_cpns'] = Carbon::createFromFormat('m/d/Y', $request->tgl_sk_cpns)->format('Y-m-d');
+        $validatedData['tmt_cpns'] = Carbon::createFromFormat('m/d/Y', $request->tmt_cpns)->format('Y-m-d');
+
         if ($request->hasFile('foto')) {
             // Store the foto in the 'public/images' directory and get the file path
             $imagePath = $request->file('foto')->store('foto', 'public');
@@ -84,6 +125,8 @@ class UserController extends Controller
 
     public function profile($id)
     {
+        $currentYear = Carbon::now()->year;
+
         $user = User::find($id); // Mencari data berdasarkan ID
         if (!$user) {
             // Jika data tidak ditemukan, bisa memberikan notifikasi atau redirect
@@ -122,43 +165,109 @@ class UserController extends Controller
             }
         }
 
+        $nilaiUser = Penilaian::where('user_id', $user->id)
+            ->where('tahun', $currentYear)
+            ->latest('created_at')
+            ->first();
+
+        $kategoriUser = null;
+        $nilaiSAW = null;
+
+        if ($nilaiUser) {
+            // Hitung nilai SAW
+            $nilaiSAW = ($nilaiUser->absen / $max['absen']) * $bobot['absen']
+                + ($nilaiUser->prestasi / $max['prestasi']) * $bobot['prestasi']
+                + ($nilaiUser->kinerja / $max['kinerja']) * $bobot['kinerja'];
+
+            // Tentukan kategori
+            if ($nilaiSAW < 0.4) {
+                $kategoriUser = "Kurang";
+            } elseif ($nilaiSAW < 0.7) {
+                $kategoriUser = "Cukup";
+            } else {
+                $kategoriUser = "Baik";
+            }
+        }
+
+        $kategoriClass = [
+            'Baik' => 'text-success',
+            'Cukup' => 'text-warning',
+            'Kurang' => 'text-danger',
+        ];
+
         return view('User.profile', [
             'tittle' => 'Profile ' . $user->nama . ' | SIPEKA',
             'user' => $user,
             'existingData' => $existingData,
             'penilaian' => $penilaians,
             'tmtPns' => $tmtPns,
+            'nilaiUser' => $nilaiUser,
+            'kategoriUser' => $kategoriUser,
+            'nilaiSAW' => $nilaiSAW,
+            'kategoriClass' => $kategoriClass[$kategoriUser] ?? '',
         ]);
     }
 
     public function search(Request $request)
     {
-        // Ambil parameter pencarian dan stok condition
         $query = $request->get('q');
+        $currentYear = now()->year;
 
-        // Mulai query untuk mengambil barang
+        // Ambil semua user yang sesuai search
         $usersQuery = User::query();
 
-        // Jika ada query pencarian (search term)
         if ($query) {
             $usersQuery->where('nama', 'like', '%' . $query . '%')
                 ->orWhere('nip', 'like', '%' . $query . '%');
         }
 
+        $users = $usersQuery->get();
 
+        // Ambil semua penilaian tahun ini
+        $hasils = Penilaian::where('tahun', $currentYear)->get();
 
-        // Lakukan pagination dan ambil data
-        $users = $usersQuery->paginate(8);
+        $bobot = BobotKriteria::pluck('bobot', 'Kriteria')->toArray();
+        $max = ['absen' => 100, 'prestasi' => 10, 'kinerja' => 10];
 
-        // Return data sebagai JSON
-        return response()->json($users);
+        // Hitung nilai SAW dan kategori
+        foreach ($hasils as $hasil) {
+            $nilai = 0;
+            $nilai += ($hasil->absen / $max['absen']) * $bobot['absen'];
+            $nilai += ($hasil->prestasi / $max['prestasi']) * $bobot['prestasi'];
+            $nilai += ($hasil->kinerja / $max['kinerja']) * $bobot['kinerja'];
+
+            $hasil->nilai_saw = round($nilai, 3);
+
+            if ($nilai < 0.4)
+                $hasil->kategori = "Kurang";
+            elseif ($nilai < 0.7)
+                $hasil->kategori = "Cukup";
+            else
+                $hasil->kategori = "Baik";
+        }
+
+        // Sisipkan hasil ke masing-masing user
+        $users->each(function ($user) use ($hasils) {
+            $user->hasils = $hasils->where('user_id', $user->id)->sortByDesc('id')->values();
+        });
+
+        // Pagination manual (karena sekarang $users sudah collect)
+        $page = $request->get('page', 1);
+        $perPage = 8;
+        $paginated = $users->slice(($page - 1) * $perPage, $perPage)->values();
+        $lastPage = ceil($users->count() / $perPage);
+
+        return response()->json([
+            'data' => $paginated,
+            'current_page' => (int) $page,
+            'last_page' => $lastPage,
+        ]);
     }
-
 
     public function fetchAll()
     {
         // Fetch all barang data with pagination
-        $users = User::paginate(4); // Paginate 4 results per page
+        $users = User::paginate(8); // Paginate 4 results per page
         return response()->json([
             'data' => $users->items(),
             'current_page' => $users->currentPage(),

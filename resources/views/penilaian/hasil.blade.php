@@ -8,10 +8,9 @@
             "language": {
                 "emptyTable": "tidak ada data"
             },
-            "lengthMenu": [5, 10, 15, 20, 25],
+            "lengthMenu": [10, 20, 50, 100],
         });
     });
-
 </script>
 
 @if ($errors->any())
@@ -42,10 +41,15 @@ $(document).on("click", ".btn-show-nilai", function() {
     // set judul modal
     $("#namaPegawai").text(nama);
 
-    // Kosongkan dulu tabel
-    $("#nilaiBody").html('<tr><td colspan="5" class="text-center">Loading...</td></tr>');
+    // kalau sudah pernah ada DataTable, destroy dulu
+    if ($.fn.DataTable.isDataTable("#historiTable")) {
+        $("#historiTable").DataTable().clear().destroy();
+    }
 
-    // Panggil route yang ambil histori penilaian
+    // Kosongkan body
+    $("#nilaiBody").html('<tr><td colspan="6" class="text-center">Loading...</td></tr>');
+
+    // Panggil route histori
     $.ajax({
         url: "/penilaian/histori/" + userId,
         type: "GET",
@@ -54,35 +58,38 @@ $(document).on("click", ".btn-show-nilai", function() {
             if (res.length > 0) {
                 $.each(res, function(i, val) {
                     rows += "<tr>" +
-                                "<td>" + val.tahun + "</td>" +
-                                "<td>" + val.absen + "%</td>" +
-                                "<td>" + val.prestasi + "</td>" +
-                                "<td>" + val.nilai_saw + "</td>" +
-                                "<td>" + 
+                                "<td class='text-center'>" + val.oleh + "</td>" +
+                                "<td class='text-center'>" + val.absen + "%</td>" +
+                                "<td class='text-center'>" + val.prestasi + "</td>" +
+                                "<td class='text-center'>" + val.kinerja + "</td>" +
+                                "<td class='text-center'>" + val.nilai_saw + "</td>" +
+                                "<td class='text-center'>" + 
                                     "<span class='badge " + 
                                         (val.kategori == 'Baik' ? "bg-success" : 
                                         (val.kategori == 'Cukup' ? "bg-warning text-dark" : "bg-danger")) + 
                                     "'>" + val.kategori + "</span>" + 
-                                "</td>"
+                                "</td>" +
+                                "<td class='text-center'>" + (val.oleh_user ? val.oleh_user.nama : '-') + "</td>"
                             "</tr>";
                 });
                 $("#nilaiBody").html(rows);
             } else {
-                $("#nilaiBody").html('<tr><td colspan="5" class="text-center">Belum ada data</td></tr>');
+                $("#nilaiBody").html('<tr><td colspan="6" class="text-center">Belum ada data</td></tr>');
             }
 
-            // Inisialisasi DataTable setelah data siap
+            // re-init DataTable setelah isi ulang
             $("#historiTable").DataTable({
-                destroy: true, // supaya bisa di re-init
                 autoWidth: false,
-                "language": {
-                    "emptyTable": "tidak ada data"
+                destroy: true,
+                language: {
+                    emptyTable: "tidak ada data"
                 },
-                "lengthMenu": [4, 10, 15, 20, 25]
+                lengthMenu: [4, 10, 15, 20, 25],
+                order: [[0, "desc"]]
             });
         },
         error: function() {
-            $("#nilaiBody").html('<tr><td colspan="5" class="text-center text-danger">Gagal mengambil data</td></tr>');
+            $("#nilaiBody").html('<tr><td colspan="6" class="text-center text-danger">Gagal mengambil data</td></tr>');
         }
     });
 });
@@ -91,13 +98,14 @@ $(document).on("click", ".btn-show-nilai", function() {
 
 <script>
 $(document).ready(function() {
-    $('#tahun').change(function() {
-        let tahun = $(this).val();
+    function loadData() {
+        let tahun = $('#tahun').val();
+        let kategori = $('#kategori').val();
 
-        // Tampilkan spinner di tabel
+        // Spinner loading
         $('#hasil-table').html(`
             <tr id="spinner-row">
-                <td colspan="9" class="text-center">
+                <td colspan="10" class="text-center">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
@@ -108,49 +116,57 @@ $(document).ready(function() {
         $.ajax({
             url: "{{ route('penilaian.hasil') }}",
             type: "GET",
-            data: { tahun: tahun },
+            data: { tahun: tahun, kategori: kategori },
             success: function(data) {
                 let html = '';
-                data.forEach((hasil, index) => {
-                    let kategoriClass = hasil.kategori === 'Baik' ? 'bg-success' : (hasil.kategori === 'Cukup' ? 'bg-warning text-dark' : 'bg-danger');
+                if (data.length === 0) {
+                    html = `<tr><td colspan="10" class="text-center">Tidak ada data</td></tr>`;
+                } else {
+                    data.forEach((hasil, index) => {
+                        let kategoriClass = hasil.kategori === 'Baik' ? 'bg-success' : (hasil.kategori === 'Cukup' ? 'bg-warning text-dark' : 'bg-danger');
 
-                    html += `<tr>
-                        <td class="text-center">${index + 1}</td>
-                        <td class="text-center">${hasil.user.nip}</td>
-                        <td class="text-center">
-                            ${hasil.user.gelar_depan ? hasil.user.gelar_depan + ' ' : ''}${hasil.user.nama}${hasil.user.gelar_belakang ? ', ' + hasil.user.gelar_belakang : ''}
-                        </td>
-                        <td class="text-center">${hasil.absen}</td>
-                        <td class="text-center">${hasil.prestasi}</td>
-                        <td class="text-center">${hasil.kinerja}</td>
-                        <td class="text-center">${hasil.nilai_saw}</td>
-                        <td class="text-center"><span class="badge ${kategoriClass}">${hasil.kategori}</span></td>
-                        <td>
-                            <div class="dropdown dropend">
-                                <button class="btn dropdown-toggle btn-xs custom-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">Detail</button>
-                                <ul class="dropdown-menu dropdown-menu-xs">
-                                    <li><a class="dropdown-item btn-show-nilai" href="#" data-bs-toggle="modal" data-bs-target="#nilaiModal" data-user-id="${hasil.user_id}" data-nama="${hasil.user.nama}"><i class="bi bi-list-ul"></i> Histori Penilaian</a></li>
-                                    ${hasil.tahun == new Date().getFullYear() ? `<li><a class="dropdown-item btn-edit-nilai" href="#" data-bs-toggle="modal" data-bs-target="#editModal" data-nilai-id="${hasil.id}"><i class="bi bi-pencil-square"></i> Edit Nilai</a></li>` : ''}
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>`;
-                });
+                        html += `<tr>
+                            <td class="text-center">${index + 1}</td>
+                            <td class="text-center">${hasil.user.nip}</td>
+                            <td class="text-center">
+                                ${hasil.user.gelar_depan ? hasil.user.gelar_depan + ' ' : ''}${hasil.user.nama}${hasil.user.gelar_belakang ? ', ' + hasil.user.gelar_belakang : ''}
+                            </td>
+                            <td class="text-center">${hasil.absen}</td>
+                            <td class="text-center">${hasil.prestasi}</td>
+                            <td class="text-center">${hasil.kinerja}</td>
+                            <td class="text-center">${hasil.nilai_saw}</td>
+                            <td class="text-center"><span class="badge ${kategoriClass}">${hasil.kategori}</span></td>
+                            <td class="text-center">${hasil.olehuser ? hasil.olehuser.nama : '-'}</td>
+                            <td>
+                                <div class="dropdown dropend">
+                                    <button class="btn dropdown-toggle btn-xs custom-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">Detail</button>
+                                    <ul class="dropdown-menu dropdown-menu-xs">
+                                        <li><a class="dropdown-item btn-show-nilai" href="#" data-bs-toggle="modal" data-bs-target="#nilaiModal" data-user-id="${hasil.user_id}" data-nama="${hasil.user.nama}"><i class="bi bi-list-ul"></i> Histori Penilaian</a></li>
+                                        ${hasil.tahun == new Date().getFullYear() ? `<li><a class="dropdown-item btn-edit-nilai" href="#" data-bs-toggle="modal" data-bs-target="#editModal" data-nilai-id="${hasil.id}"><i class="bi bi-pencil-square"></i> Edit Nilai</a></li>` : ''}
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>`;
+                    });
+                }
 
-                // Ganti spinner dengan data
                 $('#hasil-table').html(html);
-                $('#judul-penilaian').text(`Hasil Penilaian ${tahun}`);
+                $('#judul-penilaian').text(`Hasil Penilaian ${tahun} ${kategori ? '('+kategori+')' : ''}`);
             },
             error: function(xhr) {
                 alert('Terjadi kesalahan.');
                 $('#spinner-row').remove();
             }
         });
-    });
+    }
+
+    // Trigger kalau tahun atau kategori berubah
+    $('#tahun, #kategori').change(loadData);
+
+    // Load pertama kali
+    loadData();
 });
-
 </script>
-
 
 
 @endsection
@@ -186,17 +202,24 @@ $(document).ready(function() {
 
         <div class="row mb-3">
                             
-    <div class="col-md-12 d-flex justify-content-end">
-        <label for="tahun" class="me-2 align-self-center">Pilih Tahun:</label>
-            <select name="tahun" id="tahun" class="form-select w-auto d-inline-block">
+        <div class="col-md-12 d-flex justify-content-end mb-2">
+            <label for="tahun" class="me-2 align-self-center">Pilih Tahun:</label>
+            <select name="tahun" id="tahun" class="form-select w-auto d-inline-block me-3">
                 @for ($i = $currentYear; $i >= $currentYear - 4; $i--)
                     <option value="{{ $i }}" {{ $i == $selectedYear ? 'selected' : '' }}>
                         {{ $i }}
                     </option>
                 @endfor
             </select>
-    </div>
 
+            <label for="kategori" class="me-2 align-self-center">Kategori:</label>
+            <select name="kategori" id="kategori" class="form-select w-auto d-inline-block">
+                <option value="">Semua</option>
+                <option value="Baik">Baik</option>
+                <option value="Cukup">Cukup</option>
+                <option value="Kurang">Kurang</option>
+            </select>
+        </div>
 
         <!-- Left side columns -->
         <div class="col-md-12">
@@ -228,6 +251,7 @@ $(document).ready(function() {
                                 <th scope="col" class="text-center">Penilaian Kinerja</th>                         
                                 <th scope="col" class="text-center">Skor SPK</th>                         
                                 <th scope="col" class="text-center">Kategori</th>                         
+                                <th scope="col" class="text-center">Dinilai Oleh</th>                         
                                 <th scope="col" class="text-center">Aksi</th>                         
                             </tr>
                             </thead>
@@ -250,6 +274,7 @@ $(document).ready(function() {
                                         {{ $hasil->kategori }}
                                     </span>
                                     </td>
+                                    <td class="text-center">{{ $hasil->olehUser ? $hasil->olehUser->nama : '-' }}</td>
                                     <td>
                                         <div class="dropdown dropend">
                                             <button class="btn dropdown-toggle btn-xs custom-dropdown"
@@ -306,14 +331,16 @@ $(document).ready(function() {
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <table class="table table-bordered">
+       <table class="table table-hover text-center" id="historiTable">
             <thead>
                 <tr>
                     <th>Tahun</th>
                     <th>Absensi</th>
                     <th>Prestasi</th>
+                    <th>Penialain Kinerja</th>
                     <th>Nilai SAW</th>
                     <th>Kategori</th>
+                    <th>Dinilai Oleh</th>
                 </tr>
             </thead>
             <tbody id="nilaiBody">

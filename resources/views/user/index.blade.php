@@ -33,11 +33,9 @@
     </script>
 
 <script>
-// Menambahkan event listener untuk perubahan pada input pencarian (search)
 document.querySelector('input[name="table_search"]').addEventListener('input', function () {
-    let query = this.value; // Ambil nilai pencarian dari input
+    let query = this.value; // Ambil nilai pencarian
 
-    // Kirim permintaan AJAX ke server dengan query pencarian dan stok condition
     fetch(`/search?q=${query}`, {
         method: 'GET',
         headers: {
@@ -55,8 +53,21 @@ document.querySelector('input[name="table_search"]').addEventListener('input', f
         } else {
             document.getElementById('no-results-row').style.display = 'none';
 
-            // Loop hasil dan tampilkan setiap barang
             data.data.forEach(user => {
+                // Ambil kategori terbaru untuk user
+                let userHasil = user.hasils && user.hasils.length > 0
+                    ? user.hasils.sort((a, b) => b.id - a.id)[0]  // urut descending
+                    : null;
+
+                let badgeClass = 'bg-primary';
+                let badgeText = 'Belum ada penilaian';
+                if (userHasil) {
+                    if (userHasil.kategori === 'Baik') badgeClass = 'bg-success';
+                    else if (userHasil.kategori === 'Cukup') badgeClass = 'bg-warning text-dark';
+                    else badgeClass = 'bg-danger';
+                    badgeText = userHasil.kategori;
+                }
+
                 let cardHtml = `
                     <div class="col-md-3 card-wrapper">
                         <div class="card" style="height: 315px; position: relative;">
@@ -74,32 +85,19 @@ document.querySelector('input[name="table_search"]').addEventListener('input', f
                                     style="max-height: 150px; width: auto; height: auto; display: block; margin-left: auto; margin-right: auto; margin-top: 20px; object-fit: contain;">
                             </a>
 
-                            <!-- Menu dropdown -->
-                            @if(auth()->user()->role === 'Admin')
-                            <div class="dropdown" style="position: absolute; top: 10px; right: 10px;">
-                                <i class="bi bi-three-dots" style="color: gray; cursor: pointer;" data-bs-toggle="dropdown" aria-expanded="false"></i>
-                                <ul class="dropdown-menu dropdown-menu-xs">
-                                    <li>
-                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" data-mold-id="${user.id}">
-                                            <i class="bi bi-trash"></i> Hapus
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                            @endif
-
                             <!-- Konten -->
                             <div class="card-body text-center" style="height: calc(100% - 150px);">
                                 <h5 class="card-title" style="margin-top: -10px;">${user.nama}</h5>
                                 <p style="margin-top: -15px;">NIP: ${user.nip}</p>
-                                <p style="margin-top: -15px; margin-bottom: 0;">
-                                        Jenis Jabatan: ${user.jenis_jabatan}
-                                    </p>
-                                    <p style="margin-top: 0; margin-bottom: 5px; font-size: 13px; color: #6c757d;">
-                                        ${user.jabatan_nama}
-                                    </p>
+                                <p style="margin-top: -15px; margin-bottom: 0;">Jenis Jabatan: ${user.jenis_jabatan}</p>
+                                <p style="margin-top: 0; margin-bottom: 5px; font-size: 13px; color: #6c757d;">
+                                    ${user.jabatan_nama}
+                                </p>
                                 <span class="badge bg-primary" style="margin-top: -100px;">
                                     ${user.role}
+                                </span>
+                                <span class="badge ${badgeClass}" style="margin-left: 5px;">
+                                    ${badgeText}
                                 </span>
                             </div>
                         </div>
@@ -109,6 +107,7 @@ document.querySelector('input[name="table_search"]').addEventListener('input', f
             });
         }
 
+        // Pagination
         let paginationContainer = document.getElementById('paginationContainer');
         paginationContainer.innerHTML = '';
         if (data.last_page > 1) {
@@ -121,6 +120,7 @@ document.querySelector('input[name="table_search"]').addEventListener('input', f
     });
 });
 </script>
+
 
 
 
@@ -142,7 +142,7 @@ document.querySelector('input[name="table_search"]').addEventListener('input', f
 @section('isi')
 
     <div class="pagetitle">
-        <h1>Dashboard</h1>
+        <h1>Daftar Pegawai</h1>
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
@@ -239,6 +239,19 @@ document.querySelector('input[name="table_search"]').addEventListener('input', f
                                                 <span class="badge bg-primary"
                                                     style="margin-top: -100px;">
                                                     {{ $user->role }}
+                                                </span>
+
+                                                @php
+                                                    $userHasil = $hasils->where('user_id', $user->id)
+                                                                ->sortByDesc('id')
+                                                                ->first();
+                                                @endphp
+
+                                                <span class="badge {{ 
+                                                    $userHasil 
+                                                        ? ($userHasil->kategori == 'Baik' ? 'bg-success' : ($userHasil->kategori == 'Cukup' ? 'bg-warning text-dark' : 'bg-danger')) 
+                                                        : 'bg-primary' }}">
+                                                    {{ $userHasil ? $userHasil->kategori : 'Belum ada penilaian' }}
                                                 </span>
                                             </div>
                                         </div>
