@@ -218,7 +218,7 @@ $(document).on("click", ".btn-edit-nilai", function() {
                         <div class="alert alert-warning">                   
                             <h6><strong>Catatan :</strong></h6>
                             <p>
-                                Berdasarkan hasil penilaian kinerja Tahun {{ date('Y') }}, performa karyawan yang bersangkutan masih berada di bawah standar yang diharapkan. Hal ini menjadi pertimbangan dalam proses evaluasi promosi maupun pengembangan karier selanjutnya.
+                                Berdasarkan hasil penilaian kinerja Tahun {{ date('Y') }}, performa pegawai yang bersangkutan masih berada di bawah standar yang diharapkan. Hal ini menjadi pertimbangan dalam proses evaluasi promosi maupun pengembangan karier selanjutnya.
                             </p>
                             <p>
                                 Catatan ini merupakan hasil evaluasi yang dihasilkan oleh sistem secara otomatis, dan bukan merupakan keputusan final. Keputusan akhir tetap ditetapkan oleh pihak yang berwenang.

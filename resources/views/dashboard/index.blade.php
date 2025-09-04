@@ -70,6 +70,67 @@ const pieData1 = {
     });
 </script>
 
+<script>
+const ctx = document.getElementById('lineChart');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {!! json_encode(array_keys($kategoriPerTahun)) !!}, // tahun
+        datasets: [{
+            data: {!! json_encode(array_values($kategoriPerTahun)) !!}, // hasil 1/2/3/null
+            borderColor: '#0d6efd',
+            fill: false,
+            tension: 0.2,
+            pointBackgroundColor: function(context) {
+                const value = context.raw;
+                if(value === 1) return 'red';    // Kurang
+                if(value === 2) return 'orange'; // Cukup
+                if(value === 3) return 'green';  // Baik
+                return '#0d6efd';
+            }
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                suggestedMin: 0.1,
+                suggestedMax: 3.9,
+                ticks: {
+                    stepSize: 1,
+                    callback: function(value) {
+                        const mapping = {1:'Kurang', 2:'Cukup', 3:'Baik'};
+                        return mapping[value] || '';
+                    }
+                }
+            },
+            x: {
+                ticks: { font: { size: 14 } }
+            }
+        },
+        elements: { point: { radius: 6 } },
+        plugins: {
+            legend: {
+                display: false // <== menghilangkan kotak legend
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const value = context.raw;
+                        const mapping = {
+                            1: 'Kurang',
+                            2: 'Cukup',
+                            3: 'Baik'
+                        };
+                        return mapping[value] || '';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
 
 @endsection
 
@@ -108,7 +169,7 @@ const pieData1 = {
                 <div class="row">
 
                     <!-- Total Reports Card -->
-                    <div class="col-xxl-3 col-md-6">
+                    <div class="{{ auth()->user()->role === 'PNS' ? 'col-4' : 'col-xxl-3 col-md-6' }}">
                         <a href="{{ url('user/profile/' . Auth::user()->id) }}" style="text-decoration: none; color: inherit;">
                             <div class="card shadow-sm p-3 mb-3" style="border-radius: 12px; min-height: 158px;">
                                 <div class="d-flex align-items-center mb-3">
@@ -132,6 +193,7 @@ const pieData1 = {
                     </div>
 
 
+                     @if(auth()->user()->role !== 'PNS')
                     <div class="col-xxl-3 col-md-6">
                         @if(auth()->user()->role !== 'PNS')
                             <a href="/pegawai" class="text-decoration-none">
@@ -139,7 +201,7 @@ const pieData1 = {
                             <!-- Tambahkan href di sini -->
                             <div class="card info-card sales-card">
                                 <div class="card-body">
-                                    <h5 class="card-title">Jumlah Pegawai <span>| {{ $currentYear }}</span></h5>
+                                    <h5 class="card-title">Jumlah Pegawai <span> | {{ $currentYear }}</span></h5>
                                     </h5>
 
                                     <div class="d-flex align-items-center">
@@ -155,16 +217,17 @@ const pieData1 = {
                             </div>
                         </a>
                     </div><!-- End Total Reports Card -->
+                    @endif
 
 
                     <!-- Reports In Progress Card -->
-                    <div class="col-xxl-3 col-md-6">
+                    <div class="{{ auth()->user()->role === 'PNS' ? 'col-4' : 'col-xxl-3 col-md-6' }}">
                         <div class="card info-card revenue-card">
                         @if(auth()->user()->role !== 'PNS')
                             <a href="/penilaian/hasil" class="text-decoration-none">
                         @endif
                                 <div class="card-body">
-                                    <h5 class="card-title">Total Laporan Masuk Masuk <span>| {{ $currentYear }}</span></h5>
+                                    <h5 class="card-title"> {{ auth()->user()->role == 'PNS' ? 'Total Laporan Pribadi' : 'Total Laporan Masuk' }}<span> | {{ auth()->user()->role == 'PNS' ? 'Keseluruhan' : $currentYear }}</span></h5>
 
                                     <div class="d-flex align-items-center">
                                         <div
@@ -172,7 +235,7 @@ const pieData1 = {
                                             <i class="bi bi-file-text"></i>
                                         </div>
                                         <div class="ps-3">
-                                            <h6>{{ $totalLaporan }}</h6>
+                                            <h6>{{ auth()->user()->role == 'PNS' ? $totalLaporanPribadi : $totalLaporan }}</h6>
                                             <!-- Display the total count here -->
                                         </div>
                                     </div>
@@ -181,19 +244,22 @@ const pieData1 = {
                         </a>
                     </div><!-- End Reports In Progress Card -->
 
-                    <div class="col-xxl-3 col-md-6">
+                   <div class="{{ auth()->user()->role === 'PNS' ? 'col-4' : 'col-xxl-3 col-md-6' }}">
                         <div class="card info-card revenue-card">
                         @if(auth()->user()->role !== 'PNS')
                             <a href="/penilaian/hasil" class="text-decoration-none">
                         @endif
                                 <div class="card-body">
-                                    <h5 class="card-title">Rata-Rata Kinerja <span>| {{ $currentYear }}</span></h5>
+                                    <h5 class="card-title"> {{ auth()->user()->role == 'PNS' ? 'Kategori Kinerja Pribadi' : 'Rata-Rata Kinerja' }}<span> | {{ $currentYear }}</span></h5>
 
                                     <div class="d-flex align-items-center">
                                         <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                            @php
+                                                $kategori = auth()->user()->role == 'PNS' ? $kategoriUser : $rataRataKategori;
+                                            @endphp
                                             <i class="bi bi-bar-chart" 
                                             style="color: 
-                                                    @switch($rataRataKategori)
+                                                    @switch($kategori)
                                                         @case('Baik') green @break
                                                         @case('Cukup') orange @break
                                                         @case('Kurang') red @break
@@ -203,13 +269,13 @@ const pieData1 = {
                                         </div>
                                         <div class="ps-3">
                                             <h6 style="color: 
-                                                    @switch($rataRataKategori)
+                                                    @switch($kategori)
                                                         @case('Baik') green @break
                                                         @case('Cukup') orange @break
                                                         @case('Kurang') red @break
                                                         @default black
                                                     @endswitch">
-                                                {{ $rataRataKategori }}
+                                                {{ $kategori ?? '-' }}
                                             </h6>
                                         </div>
                                     </div>
@@ -220,22 +286,32 @@ const pieData1 = {
 
 
             <div class="col-xxl-8 col-md-12">
-    <div class="card info-card sales-card">
-        <div class="card-body">
-            <h5 class="card-title">Distribusi Penilaian <span>| {{ $currentYear }}</span></h5>
-            <div style="max-width: 250px; margin: auto;">
-                <canvas id="pieChart1"></canvas>
-            </div>
-        </div>
-    </div>
-</div><!-- End Card with Pie Chart 1 -->
+                <div class="card info-card sales-card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                        @if(auth()->user()->role === 'PNS')
+                            Grafik Penilaian Tahunan
+                        @else
+                            Distribusi Penilaian <span>| {{ $currentYear }}</span>
+                        @endif
+                    </h5>
+                    <div style="width: 100%; height: 300px; display: flex; justify-content: center; align-items: center;">
+                           @if(auth()->user()->role == 'PNS')
+                                <canvas id="lineChart"></canvas>
+                            @else
+                                <canvas id="pieChart1"></canvas>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div><!-- End Card with Pie Chart 1 -->
 
 <div class="col-xxl-4 col-md-12">
     <a href="{{ url('user/profile/' . Auth::user()->id) }}#profile-edit" class="text-decoration-none text-dark card-link-tab">
         <div class="card info-card sales-card">
             <div class="card-body">
                 <h5 class="card-title">Nilai Kinerja Pribadi <span>| {{ $currentYear }}</span></h5>
-                <div style="height: 250px; margin-left: 0; padding: 20px;">
+                <div style="height: 300px; margin-left: 0; padding: 20px;">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between">
                             <span>Absensi</span>

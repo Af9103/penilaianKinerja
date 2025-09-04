@@ -179,6 +179,7 @@ $(document).on("click", ".btn-show-nilai", function() {
                                 <th scope="col" class="text-center">NIP</th>
                                 <th scope="col" class="text-center">Nama Lengkap</th>                         
                                 <th scope="col" class="text-center">TMT PNS</th>                         
+                                <th scope="col" class="text-center">Jabatan</th>                         
                                 <th scope="col" class="text-center">Absensi</th>                         
                                 <th scope="col" class="text-center">Prestasi</th>                         
                                 <th scope="col" class="text-center">Penilaian Kinerja</th>                         
@@ -192,12 +193,13 @@ $(document).on("click", ".btn-show-nilai", function() {
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
                                     <td class="text-center">{{ $hasil->user->nip }}</td>
-                                    <td class="text-center">{{ \Carbon\Carbon::parse($hasil->user->tmt_pns)->format('d M y') }}</td>
                                     <td class="text-center">
                                         {{ $hasil->user->gelar_depan ? $hasil->gelar_depan . ' ' : '' }}
                                         {{ $hasil->user->nama }}
                                         {{ $hasil->user->gelar_belakang ? ', ' . $hasil->user->gelar_belakang : '' }}
                                     </td>
+                                    <td class="text-center">{{ $hasil->user->tmt_pns ? \Carbon\Carbon::parse($hasil->user->tmt_pns)->format('d M y') : '-' }}</td>
+                                     <td class="text-center">{{ $hasil->user->jenis_jabatan }}</td>
                                     <td class="text-center">{{ $hasil->absen }}</td>
                                     <td class="text-center">{{ $hasil->prestasi }}</td>
                                     <td class="text-center">{{ $hasil->kinerja }}</td>
@@ -258,8 +260,37 @@ $(document).on("click", ".btn-show-nilai", function() {
                                                   <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
                                               </div>
                                               
+                                              
                                               <div class="modal-body">
                                                   <div class="mb-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Status CPNS/PNS <span style="color: red;">*</span></label><br>
+
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input @error('status_pns') is-invalid @enderror" 
+                                                                type="radio" 
+                                                                name="status_pns" 
+                                                                id="C" 
+                                                                value="C" 
+                                                                {{ (old('status_pns', $hasil->user->status_pns) == 'C') ? 'checked' : '' }}>
+                                                            <label class="form-check-label" for="C">CPNS</label>
+                                                        </div>
+
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input @error('status_pns') is-invalid @enderror" 
+                                                                type="radio" 
+                                                                name="status_pns" 
+                                                                id="P" 
+                                                                value="P" 
+                                                                {{ (old('status_pns', $hasil->user->status_pns) == 'P') ? 'checked' : '' }}>
+                                                            <label class="form-check-label" for="P">PNS</label>
+                                                        </div>
+
+                                                        @error('status_pns')
+                                                            <div class="text-danger mt-2">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+
                                                       <label for="gol" class="form-label">Golongan <span style="color: red;">*</span></label>
                                                       <select id="gol" name="gol" class="form-control @error('gol') is-invalid @enderror">
                                                         <option value="">-- Pilih Golongan --</option>
@@ -299,7 +330,7 @@ $(document).on("click", ".btn-show-nilai", function() {
                         <div class="alert alert-info">                   
                             <h6><strong>Catatan :</strong></h6>
                             <p>
-                                Rekomendasi promosi ini diberikan karena pengangkatan karyawan didasarkan pada penilaian kinerja serta riwayat kepangkatan. Berdasarkan data, TMT kenaikan pangkat terakhir karyawan yang bersangkutan telah lebih dari 4 tahun, dan hasil penilaiannya menunjukkan kategori baik.
+                                Rekomendasi promosi ini diberikan karena pengangkatan pegawai didasarkan pada penilaian kinerja serta riwayat kepangkatan. Berdasarkan data, TMT kenaikan pangkat terakhir pegawai yang bersangkutan telah lebih dari 4 tahun, dan hasil penilaiannya menunjukkan kategori baik.
                             </p>
                             <p>
                                 Catatan ini merupakan rekomendasi yang dihasilkan oleh sistem secara otomatis, dan bukan merupakan keputusan final. Keputusan akhir tetap ditetapkan oleh pihak yang berwenang.

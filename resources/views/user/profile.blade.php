@@ -84,11 +84,13 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     
     {{-- Tombol Promosikan --}}
+    @if(auth()->user()->role === 'Atasan')
       <a href="#" class="btn btn-primary" 
         data-toggle="modal" 
-        data-target="#promosiModal{{ $nilaiUser->id }}">
+        data-target="#promosiModal{{ $user->id }}">
           <i class="bi bi-arrow-up-circle"></i> Promosikan
       </a>
+      @endif
       
 </div>
 
@@ -352,21 +354,49 @@ document.addEventListener('DOMContentLoaded', function() {
 </section>
 
 @endsection
-<div class="modal fade" id="promosiModal{{ $nilaiUser->id }}" tabindex="-1" 
-     role="dialog" aria-labelledby="promosiModalLabel{{ $nilaiUser->id }}" aria-hidden="true">
+<div class="modal fade" id="promosiModal{{ $user->id }}" tabindex="-1" 
+     role="dialog" aria-labelledby="promosiModalLabel{{ $user->id }}" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <form action="{{ route('spk.promosi', $nilaiUser->user_id) }}" method="POST">
+        <form action="{{ route('spk.promosi', $user->id) }}" method="POST">
             @csrf
             @method('PUT')
 
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Promosi Pegawai - {{ $nilaiUser->user->nama }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Promosi Pegawai - {{ $user->nama }}</h5>
+                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body">
                     <div class="mb-3">
+                      <div class="mb-3">
+                          <label class="form-label">Status CPNS/PNS <span style="color: red;">*</span></label><br>
+
+                          <div class="form-check form-check-inline">
+                              <input class="form-check-input @error('status_pns') is-invalid @enderror" 
+                                    type="radio" 
+                                    name="status_pns" 
+                                    id="C" 
+                                    value="C" 
+                                    {{ (old('status_pns', $user->status_pns) == 'C') ? 'checked' : '' }}>
+                              <label class="form-check-label" for="C">CPNS</label>
+                          </div>
+
+                          <div class="form-check form-check-inline">
+                              <input class="form-check-input @error('status_pns') is-invalid @enderror" 
+                                    type="radio" 
+                                    name="status_pns" 
+                                    id="P" 
+                                    value="P" 
+                                    {{ (old('status_pns', $user->status_pns) == 'P') ? 'checked' : '' }}>
+                              <label class="form-check-label" for="P">PNS</label>
+                          </div>
+
+                          @error('status_pns')
+                              <div class="text-danger mt-2">{{ $message }}</div>
+                          @enderror
+                      </div>
+
                         <label for="gol" class="form-label">Golongan <span class="text-danger">*</span></label>
                         <select id="gol" name="gol" class="form-control @error('gol') is-invalid @enderror" data-live-search="true">
                             <option value="">-- Pilih Golongan --</option>
@@ -378,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             @endphp
 
                             @foreach($golongan as $g)
-                                <option value="{{ $g }}" {{ $nilaiUser->user->gol == $g ? 'selected' : '' }}>{{ $g }}</option>
+                                <option value="{{ $g }}" {{ $user->gol == $g ? 'selected' : '' }}>{{ $g }}</option>
                             @endforeach
                         </select>
                         @error('gol')
@@ -388,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
             </div>

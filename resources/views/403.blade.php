@@ -69,11 +69,19 @@
         <div class="icon-lock">🔒</div>
         <h1>Access Denied</h1>
         <p>Sorry, you don't have permission to access this page.</p>
-        <form action="/logout" method="POST">
-            @csrf
-            <button type="submit" class="btn">Back to Home</button>
-        </form>
+
+        @auth
+            {{-- Kalau sudah login, tampilkan tombol logout --}}
+            <form action="/logout" method="POST">
+                @csrf
+                <button type="submit" class="btn">Back to Home</button>
+            </form>
+        @else
+            {{-- Kalau belum login, arahkan ke login page --}}
+            <a href="login" class="btn">Go to Login</a>
+        @endauth
     </div>
 </body>
+
 
 </html>

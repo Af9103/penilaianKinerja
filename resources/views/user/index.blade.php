@@ -68,6 +68,8 @@ document.querySelector('input[name="table_search"]').addEventListener('input', f
                     badgeText = userHasil.kategori;
                 }
 
+                const loggedInRole = "{{ auth()->user()->role }}"; // bisa di-assign lewat blade ke JS
+                const loggedInId = "{{ auth()->user()->id }}";
                 let cardHtml = `
                     <div class="col-md-3 card-wrapper">
                         <div class="card" style="height: 315px; position: relative;">
@@ -84,6 +86,19 @@ document.querySelector('input[name="table_search"]').addEventListener('input', f
                                     alt="Foto Profil" 
                                     style="max-height: 150px; width: auto; height: auto; display: block; margin-left: auto; margin-right: auto; margin-top: 20px; object-fit: contain;">
                             </a>
+                            ${loggedInRole === 'Admin' ? `
+                            <div class="dropdown" style="position: absolute; top: 10px; right: 10px;">
+                                <i class="bi bi-three-dots" style="color: gray; cursor: pointer;" data-bs-toggle="dropdown" aria-expanded="false"></i>
+                                <ul class="dropdown-menu dropdown-menu-xs">
+                                    <li><a class="dropdown-item" href="/user/edit/${user.id}">
+                                        <i class="bi bi-pencil"></i> Edit</a>
+                                    </li>
+                                    ${loggedInId != user.id ? `
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" data-mold-id="${user.id}">
+                                        <i class="bi bi-trash"></i> Hapus</a>
+                                    </li>` : ''}
+                                </ul>
+                            </div>` : ''}
 
                             <!-- Konten -->
                             <div class="card-body text-center" style="height: calc(100% - 150px);">
@@ -215,10 +230,15 @@ document.querySelector('input[name="table_search"]').addEventListener('input', f
                                             <div class="dropdown" style="position: absolute; top: 10px; right: 10px;">
                                                 <i class="bi bi-three-dots" style="color: gray; cursor: pointer;" data-bs-toggle="dropdown" aria-expanded="false"></i>
                                                 <ul class="dropdown-menu dropdown-menu-xs">
+                                                    <li><a class="dropdown-item" href="{{ url('user/edit/' . $user->id) }}">
+                                                    <i class="bi bi-pencil"></i> Edit</a>
+                                                </li>
+                                                @if(auth()->user()->id !== $user->id)
                                                     <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal" 
                                                     data-mold-id="{{ $user->id }}">
                                                     <i class="bi bi-trash"></i> Hapus</a>
                                                 </li>
+                                                @endif
                                                     
                                                 </ul>
                                             </div>

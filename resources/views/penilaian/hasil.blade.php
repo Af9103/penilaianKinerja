@@ -259,11 +259,11 @@ $(document).ready(function() {
                                 @foreach ($hasils as $hasil)
                                 <tr>
                                     <td class="text-center">{{ $loop->iteration }}</td>
-                                    <td class="text-center">{{ $hasil->user->nip }}</td>
+                                    <td class="text-center">{{ $hasil->user?->nip ?? '-' }}</td>
                                     <td class="text-center">
-                                        {{ $hasil->user->gelar_depan ? $hasil->gelar_depan . ' ' : '' }}
-                                        {{ $hasil->user->nama }}
-                                        {{ $hasil->user->gelar_belakang ? ', ' . $hasil->user->gelar_belakang : '' }}
+                                        {{ $hasil->user?->gelar_depan ? $hasil->user->gelar_depan . ' ' : '' }}
+                                        {{ $hasil->user?->nama ?? '-' }}
+                                        {{ $hasil->user?->gelar_belakang ? ', ' . $hasil->user->gelar_belakang : '' }}
                                     </td>
                                     <td class="text-center">{{ $hasil->absen }}</td>
                                     <td class="text-center">{{ $hasil->prestasi }}</td>
@@ -291,7 +291,7 @@ $(document).ready(function() {
                                                         data-bs-toggle="modal" 
                                                         data-bs-target="#nilaiModal" 
                                                         data-user-id="{{ $hasil->user_id }}"
-                                                        data-nama="{{ $hasil->user->nama }}">
+                                                        data-nama="{{ $hasil->user?->nama ?? '-' }}">
                                                         <i class="bi bi-list-ul"></i> Histori Penilaian
                                                         </a>
                                                     </li>

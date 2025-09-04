@@ -33,6 +33,8 @@ Route::get('/user/tambah', [UserController::class, 'show'])->middleware(['check.
 Route::post('/user/tambah', [UserController::class, 'save'])->middleware(['check.admin']);
 Route::delete('/user/{user}', [UserController::class, 'destroy'])->middleware(['check.admin']);
 Route::get('/user/profile/{id}', [UserController::class, 'profile'])->middleware(['check.login']);
+Route::get('/user/edit/{id}', [UserController::class, 'edit'])->middleware(['check.admin']);
+Route::post('/user/edit/{id}', [UserController::class, 'update'])->name('user.update')->middleware(['check.admin']);
 
 Route::get('/penilaian', [PenilaianController::class, 'show'])->middleware(['check.atasan']);
 Route::post('/penilaian/store', [PenilaianController::class, 'store'])->middleware(['check.atasan']);

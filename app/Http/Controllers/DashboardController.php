@@ -20,6 +20,10 @@ class DashboardController extends Controller
             ->where('tahun', $currentYear)
             ->get();
 
+        $pribadi = Penilaian::with('user')
+            ->where('user_id', auth()->id())
+            ->get();
+
         // Bobot tiap kriteria
         $bobot = BobotKriteria::pluck('bobot', 'Kriteria')->toArray();
 
@@ -115,11 +119,38 @@ class DashboardController extends Controller
             'Kurang' => 'text-danger',
         ];
 
+        $years = range($currentYear - 3, $currentYear);
+        $kategoriPerTahun = [];
+
+        foreach ($years as $year) {
+            $penilaianTahun = Penilaian::where('user_id', auth()->id())
+                ->where('tahun', $year)
+                ->latest('created_at')
+                ->first();
+
+            if ($penilaianTahun) {
+                $nilaiSAW = ($penilaianTahun->absen / $max['absen']) * $bobot['absen']
+                    + ($penilaianTahun->prestasi / $max['prestasi']) * $bobot['prestasi']
+                    + ($penilaianTahun->kinerja / $max['kinerja']) * $bobot['kinerja'];
+
+                if ($nilaiSAW < 0.4) {
+                    $kategoriPerTahun[$year] = 1;
+                } elseif ($nilaiSAW < 0.7) {
+                    $kategoriPerTahun[$year] = 2;
+                } else {
+                    $kategoriPerTahun[$year] = 3;
+                }
+            } else {
+                $kategoriPerTahun[$year] = null;
+            }
+        }
+
         return view('dashboard.index', [
             'tittle' => 'Dashboard | SIPEKA',
             'currentMonthYear' => Carbon::now()->isoFormat('MMMM YYYY'),
             'totalPegawai' => User::count(),
             'totalLaporan' => $hasils->count(),
+            'totalLaporanPribadi' => $pribadi->count(),
             'currentMonth' => $currentMonth,
             'currentYear' => $currentYear,
             'rataRataKategori' => $rataRataKategori,
@@ -128,7 +159,7 @@ class DashboardController extends Controller
             'kategoriUser' => $kategoriUser,
             'nilaiSAW' => $nilaiSAW,
             'kategoriClass' => $kategoriClass[$kategoriUser] ?? '',
+            'kategoriPerTahun' => $kategoriPerTahun,
         ]);
     }
-
 }

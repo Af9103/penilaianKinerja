@@ -141,7 +141,7 @@ class SpkController extends Controller
 
         // Kirim data ke view
         return view('spk.evaluasi', [
-            'tittle' => 'Evaluasi Karyawan | SIPEKA',
+            'tittle' => 'Evaluasi Pegawai | SIPEKA',
             'hasils' => $hasils,
             'currentMonth' => $currentMonth,
             'currentYear' => $currentYear,
@@ -172,11 +172,13 @@ class SpkController extends Controller
     {
         $request->validate([
             'gol' => 'required|string',
+            'status_pns' => 'required|in:C,P',
         ]);
 
         // update user
         $user = User::findOrFail($id);
         $user->gol = $request->gol;
+        $user->status_pns = $request->status_pns;
         $user->tmt_pns = Carbon::now('Asia/Jakarta')->toDateString();
         $user->save();
 
@@ -251,10 +253,10 @@ class SpkController extends Controller
         ];
 
         // Narasi otomatis
-        $narasi = "Pada tahun $tahun, hasil evaluasi menunjukkan bahwa mayoritas karyawan berada pada kategori "
+        $narasi = "Pada tahun $tahun, hasil evaluasi menunjukkan bahwa mayoritas pegawai berada pada kategori "
             . ($summary['baik'] >= $summary['cukup'] && $summary['baik'] >= $summary['kurang'] ? "Baik" :
                 ($summary['cukup'] >= $summary['kurang'] ? "Cukup" : "Kurang"))
-            . ". Jumlah karyawan dievaluasi sebanyak {$summary['total']} orang, dengan rincian "
+            . ". Jumlah pegawai dievaluasi sebanyak {$summary['total']} orang, dengan rincian "
             . "{$summary['baik']} Baik, {$summary['cukup']} Cukup, dan {$summary['kurang']} Kurang.";
 
         return view('spk.lap-evaluasi', [

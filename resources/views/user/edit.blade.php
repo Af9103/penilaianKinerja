@@ -34,44 +34,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show image preview before form submission
     document.addEventListener('DOMContentLoaded', function() {
-        const imageInput = document.getElementById('foto');
-        const imagePreview = document.getElementById('imagePreview');
+    const imageInput = document.getElementById('foto');
+    const imagePreview = document.getElementById('imagePreview');
 
-        imageInput.addEventListener('change', function() {
-            const file = imageInput.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block'; // Show the image preview
-                };
-                reader.readAsDataURL(file);
-            } else {
-                imagePreview.style.display = 'none'; // Hide the image preview if no file is selected
-            }
-        });
+    imageInput.addEventListener('change', function() {
+        const file = imageInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else if ("{{ $user->foto }}") {
+            // Jika batal pilih file, tampilkan gambar lama
+            imagePreview.src = "{{ asset('storage/foto/' . $user->foto) }}";
+            imagePreview.style.display = 'block';
+        } else {
+            imagePreview.style.display = 'none';
+        }
     });
+});
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const deptSelect = document.getElementById('dept');
-        const produksiFields = document.getElementById('produksi-fields');
-
-        function toggleProduksiFields() {
-            if (deptSelect.value === 'Produksi') {
-                produksiFields.style.display = 'block';
-            } else {
-                produksiFields.style.display = 'none';
-            }
-        }
-
-        // Trigger on page load (for old values)
-        toggleProduksiFields();
-
-        // Trigger on change
-        deptSelect.addEventListener('change', toggleProduksiFields);
-    });
 
 $(function () {
     $("#tanggal_lahir").datepicker({
@@ -166,14 +152,15 @@ $(function () {
                               </div>
                             </div>
                             @endif
-                            <form method="POST" action="/user/tambah" enctype="multipart/form-data">
+                            <form method="POST" action="/user/edit/{{ $user->id }}" enctype="multipart/form-data">
                                 @csrf
                             <div class="row">
+                                <input type="hidden" id="id" name="id" class="form-control @error('id') is-invalid @enderror"  value="{{ old('id', $user->id) }}">
                                 <!-- Kolom Kiri -->
                                 <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="nip" class="form-label">NIP<span style="color: red;">*</span></label>
-                                    <input type="number" id="nip" name="nip" class="form-control @error('nip') is-invalid @enderror" value="{{ old('nip') }}">
+                                    <input type="number" id="nip" name="nip" class="form-control @error('nip') is-invalid @enderror" value="{{ old('nip', $user->nip) }}">
                                     @error('nip')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -181,7 +168,7 @@ $(function () {
                                 
                                 <div class="mb-3">
                                     <label for="nama" class="form-label">Nama Lengkap<span style="color: red;">*</span></label>
-                                    <input type="text" id="nama" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}">
+                                    <input type="text" id="nama" name="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama', $user->nama) }}">
                                     @error('nama')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -191,7 +178,7 @@ $(function () {
                                     <label for="nik" class="form-label">NIK <span style="color: red;">*</span></label>
                                     <input type="text" id="nik" name="nik" 
                                         class="form-control @error('nik') is-invalid @enderror" 
-                                        value="{{ old('nik') }}" maxlength="16">
+                                        value="{{ old('nik', $user->nik) }}" maxlength="16">
                                     @error('nik')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -199,7 +186,7 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="nama" class="form-label">E-Mail<span style="color: red;">*</span></label>
-                                    <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}">
+                                    <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $user->email) }}">
                                     @error('email')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -207,7 +194,7 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="no_hp" class="form-label">No HP<span style="color: red;">*</span></label>
-                                    <input type="text" id="no_hp" name="no_hp" class="form-control @error('no_hp') is-invalid @enderror" value="{{ old('no_hp') }}">
+                                    <input type="text" id="no_hp" name="no_hp" class="form-control @error('no_hp') is-invalid @enderror" value="{{ old('no_hp', $user->no_hp) }}">
                                     @error('no_hp')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -215,7 +202,7 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="gelar_depan" class="form-label">Gelar Depan</label>
-                                    <input type="text" id="gelar_depan" name="gelar_depan" class="form-control @error('gelar_depan') is-invalid @enderror" value="{{ old('gelar_depan') }}">
+                                    <input type="text" id="gelar_depan" name="gelar_depan" class="form-control @error('gelar_depan') is-invalid @enderror" value="{{ old('gelar_depan', $user->gelar_depan) }}">
                                     @error('gelar_depan')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -223,7 +210,7 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="gelar_belakang" class="form-label">Gelar Belakang</label>
-                                    <input type="text" id="gelar_belakang" name="gelar_belakang" class="form-control @error('gelar_belakang') is-invalid @enderror" value="{{ old('gelar_belakang') }}">
+                                    <input type="text" id="gelar_belakang" name="gelar_belakang" class="form-control @error('gelar_belakang') is-invalid @enderror" value="{{ old('gelar_belakang', $user->gelar_belakang) }}">
                                     @error('gelar_belakang')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -231,7 +218,7 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="tempat_lahir" class="form-label">Tempat Lahir<span style="color: red;">*</span></label>
-                                    <input type="text" id="tempat_lahir" name="tempat_lahir" class="form-control @error('tempat_lahir') is-invalid @enderror" value="{{ old('tempat_lahir') }}">
+                                    <input type="text" id="tempat_lahir" name="tempat_lahir" class="form-control @error('tempat_lahir') is-invalid @enderror" value="{{ old('tempat_lahir', $user->tempat_lahir) }}">
                                     @error('tempat_lahir')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -239,7 +226,7 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="tanggal_lahir" class="form-label">Tanggal Lahir<span style="color: red;">*</span></label>
-                                    <input type="text" id="tanggal_lahir" name="tanggal_lahir" class="form-control @error('tanggal_lahir') is-invalid @enderror" value="{{ old('tanggal_lahir') }}" autocomplete="off">
+                                    <input type="text" id="tanggal_lahir" name="tanggal_lahir" class="form-control @error('tanggal_lahir') is-invalid @enderror" value="{{ old('tanggal_lahir', \Carbon\Carbon::parse($user->tanggal_lahir)->format('m/d/Y')) }}" autocomplete="off">
                                     @error('tanggal_lahir')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -254,7 +241,7 @@ $(function () {
                                             name="jenis_kelamin" 
                                             id="laki" 
                                             value="L" 
-                                            {{ old('jenis_kelamin') == 'L' ? 'checked' : '' }}>
+                                            {{ old('jenis_kelamin', $user->jenis_kelamin) == 'L' ? 'checked' : '' }}>
                                         <label class="form-check-label" for="laki">Laki-Laki</label>
                                     </div>
 
@@ -264,7 +251,7 @@ $(function () {
                                             name="jenis_kelamin" 
                                             id="perempuan" 
                                             value="P" 
-                                            {{ old('jenis_kelamin') == 'P' ? 'checked' : '' }}>
+                                            {{ old('jenis_kelamin', $user->jenis_kelamin) == 'P' ? 'checked' : '' }}>
                                         <label class="form-check-label" for="perempuan">Perempuan</label>
                                     </div>
 
@@ -278,12 +265,12 @@ $(function () {
                                     <select id="agama" name="agama" 
                                         class="form-control @error('agama') is-invalid @enderror" data-live-search="true">
                                         <option value="">-- Pilih Agama --</option>
-                                        <option value="Islam" {{ old('agama') == 'Islam' ? 'selected' : '' }}>Islam</option>
-                                        <option value="Kristen" {{ old('agama') == 'Kristen' ? 'selected' : '' }}>Kristen</option>
-                                        <option value="Katolik" {{ old('agama') == 'Katolik' ? 'selected' : '' }}>Katolik</option>
-                                        <option value="Hindu" {{ old('agama') == 'Hindu' ? 'selected' : '' }}>Hindu</option>
-                                        <option value="Buddha" {{ old('agama') == 'Buddha' ? 'selected' : '' }}>Buddha</option>
-                                        <option value="Khonghucu" {{ old('agama') == 'Khonghucu' ? 'selected' : '' }}>Khonghucu</option>
+                                        <option value="Islam" {{ old('agama', $user->agama) == 'Islam' ? 'selected' : '' }}>Islam</option>
+                                        <option value="Kristen" {{ old('agama', $user->agama) == 'Kristen' ? 'selected' : '' }}>Kristen</option>
+                                        <option value="Katolik" {{ old('agama', $user->agama) == 'Katolik' ? 'selected' : '' }}>Katolik</option>
+                                        <option value="Hindu" {{ old('agama', $user->agama) == 'Hindu' ? 'selected' : '' }}>Hindu</option>
+                                        <option value="Buddha" {{ old('agama', $user->agama) == 'Buddha' ? 'selected' : '' }}>Buddha</option>
+                                        <option value="Khonghucu" {{ old('agama', $user->agama) == 'Khonghucu' ? 'selected' : '' }}>Khonghucu</option>
                                     </select>
                                     @error('agama')
                                         <div class="text-danger mt-2">{{ $message }}</div>
@@ -295,9 +282,9 @@ $(function () {
                                     <select id="status_pernikahan" name="status_pernikahan" 
                                             class="form-control @error('status_pernikahan') is-invalid @enderror">
                                         <option value="">-- Pilih Status --</option>
-                                        <option value="Belum Menikah" {{ old('status_pernikahan') == 'Belum Menikah' ? 'selected' : '' }}>Belum Menikah</option>
-                                        <option value="Menikah" {{ old('status_pernikahan') == 'Menikah' ? 'selected' : '' }}>Menikah</option>
-                                        <option value="Cerai" {{ old('status_pernikahan') == 'Cerai' ? 'selected' : '' }}>Cerai Hidup</option>
+                                        <option value="Belum Menikah" {{ old('status_pernikahan', $user->status_pernikahan) == 'Belum Menikah' ? 'selected' : '' }}>Belum Menikah</option>
+                                        <option value="Menikah" {{ old('status_pernikahan', $user->status_pernikahan) == 'Menikah' ? 'selected' : '' }}>Menikah</option>
+                                        <option value="Cerai" {{ old('status_pernikahan', $user->status_pernikahan) == 'Cerai' ? 'selected' : '' }}>Cerai Hidup</option>
                                     </select>
 
                                     @error('status_pernikahan')
@@ -310,7 +297,7 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="tgl_sk_cpns" class="form-label">Tanggal SK CPNS<span style="color: red;">*</span></label>
-                                    <input type="text" id="tgl_sk_cpns" name="tgl_sk_cpns" class="form-control @error('tgl_sk_cpns') is-invalid @enderror" value="{{ old('tgl_sk_cpns') }}" autocomplete="off">
+                                    <input type="text" id="tgl_sk_cpns" name="tgl_sk_cpns" class="form-control @error('tgl_sk_cpns') is-invalid @enderror" value="{{ old('tgl_sk_cpns', $user->tgl_sk_cpns ? \Carbon\Carbon::parse($user->tgl_sk_cpns)->format('m/d/Y') : '') }}" autocomplete="off">
                                     @error('tgl_sk_cpns')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -325,7 +312,7 @@ $(function () {
                                             name="status_pns" 
                                             id="C" 
                                             value="C" 
-                                            {{ old('status_pns') == 'C' ? 'checked' : '' }}>
+                                            {{ old('status_pns', $user->status_pns) == 'C' ? 'checked' : '' }}>
                                         <label class="form-check-label" for="C">CPNS</label>
                                     </div>
 
@@ -335,7 +322,7 @@ $(function () {
                                             name="status_pns" 
                                             id="P" 
                                             value="P" 
-                                            {{ old('status_pns') == 'P' ? 'checked' : '' }}>
+                                            {{ old('status_pns', $user->status_pns) == 'P' ? 'checked' : '' }}>
                                         <label class="form-check-label" for="P">PNS</label>
                                     </div>
 
@@ -346,7 +333,7 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="no_sk_cpns" class="form-label">Nomor SK CPNS<span style="color: red;">*</span></label>
-                                    <input type="text" id="no_sk_cpns" name="no_sk_cpns" class="form-control @error('no_sk_cpns') is-invalid @enderror" value="{{ old('no_sk_cpns') }}">
+                                    <input type="text" id="no_sk_cpns" name="no_sk_cpns" class="form-control @error('no_sk_cpns') is-invalid @enderror" value="{{ old('no_sk_cpns', $user->no_sk_cpns) }}">
                                     @error('no_sk_cpns')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -354,7 +341,7 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="tmt_cpns" class="form-label">TMT CPNS<span style="color: red;">*</span></label>
-                                    <input type="text" id="tmt_cpns" name="tmt_cpns" class="form-control @error('tmt_cpns') is-invalid @enderror" value="{{ old('tmt_cpns') }}" autocomplete="off">
+                                    <input type="text" id="tmt_cpns" name="tmt_cpns" class="form-control @error('tmt_cpns') is-invalid @enderror" value="{{ old('tmt_cpns', $user->tmt_cpns ? \Carbon\Carbon::parse($user->tmt_cpns)->format('m/d/Y') : '') }}" autocomplete="off">
                                     @error('tmt_cpns')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -365,23 +352,23 @@ $(function () {
                                     <select id="gol" name="gol" 
                                             class="form-control @error('gol') is-invalid @enderror">
                                         <option value="">-- Pilih Golongan --</option>
-                                        <option value="I/a" {{ old('gol') == 'I/a' ? 'selected' : '' }}>I/a</option>
-                                        <option value="I/b" {{ old('gol') == 'I/b' ? 'selected' : '' }}>I/b</option>
-                                        <option value="I/c" {{ old('gol') == 'I/c' ? 'selected' : '' }}>I/c</option>
-                                        <option value="I/d" {{ old('gol') == 'I/d' ? 'selected' : '' }}>I/d</option>
-                                        <option value="II/a" {{ old('gol') == 'II/a' ? 'selected' : '' }}>II/a</option>
-                                        <option value="II/b" {{ old('gol') == 'II/b' ? 'selected' : '' }}>II/b</option>
-                                        <option value="II/c" {{ old('gol') == 'II/c' ? 'selected' : '' }}>II/c</option>
-                                        <option value="II/d" {{ old('gol') == 'II/d' ? 'selected' : '' }}>II/d</option>
-                                        <option value="III/a" {{ old('gol') == 'III/a' ? 'selected' : '' }}>III/a</option>
-                                        <option value="III/b" {{ old('gol') == 'III/b' ? 'selected' : '' }}>III/b</option>
-                                        <option value="III/c" {{ old('gol') == 'III/c' ? 'selected' : '' }}>III/c</option>
-                                        <option value="III/d" {{ old('gol') == 'III/d' ? 'selected' : '' }}>III/d</option>
-                                        <option value="IV/a" {{ old('gol') == 'IV/a' ? 'selected' : '' }}>IV/a</option>
-                                        <option value="IV/b" {{ old('gol') == 'IV/b' ? 'selected' : '' }}>IV/b</option>
-                                        <option value="IV/c" {{ old('gol') == 'IV/c' ? 'selected' : '' }}>IV/c</option>
-                                        <option value="IV/d" {{ old('gol') == 'IV/d' ? 'selected' : '' }}>IV/d</option>
-                                        <option value="IV/e" {{ old('gol') == 'IV/e' ? 'selected' : '' }}>IV/e</option>
+                                        <option value="I/a" {{ old('gol', $user->gol) == 'I/a' ? 'selected' : '' }}>I/a</option>
+                                        <option value="I/b" {{ old('gol', $user->gol) == 'I/b' ? 'selected' : '' }}>I/b</option>
+                                        <option value="I/c" {{ old('gol', $user->gol) == 'I/c' ? 'selected' : '' }}>I/c</option>
+                                        <option value="I/d" {{ old('gol', $user->gol) == 'I/d' ? 'selected' : '' }}>I/d</option>
+                                        <option value="II/a" {{ old('gol', $user->gol) == 'II/a' ? 'selected' : '' }}>II/a</option>
+                                        <option value="II/b" {{ old('gol', $user->gol) == 'II/b' ? 'selected' : '' }}>II/b</option>
+                                        <option value="II/c" {{ old('gol', $user->gol) == 'II/c' ? 'selected' : '' }}>II/c</option>
+                                        <option value="II/d" {{ old('gol', $user->gol) == 'II/d' ? 'selected' : '' }}>II/d</option>
+                                        <option value="III/a" {{ old('gol', $user->gol) == 'III/a' ? 'selected' : '' }}>III/a</option>
+                                        <option value="III/b" {{ old('gol', $user->gol) == 'III/b' ? 'selected' : '' }}>III/b</option>
+                                        <option value="III/c" {{ old('gol', $user->gol) == 'III/c' ? 'selected' : '' }}>III/c</option>
+                                        <option value="III/d" {{ old('gol', $user->gol) == 'III/d' ? 'selected' : '' }}>III/d</option>
+                                        <option value="IV/a" {{ old('gol', $user->gol) == 'IV/a' ? 'selected' : '' }}>IV/a</option>
+                                        <option value="IV/b" {{ old('gol', $user->gol) == 'IV/b' ? 'selected' : '' }}>IV/b</option>
+                                        <option value="IV/c" {{ old('gol', $user->gol) == 'IV/c' ? 'selected' : '' }}>IV/c</option>
+                                        <option value="IV/d" {{ old('gol', $user->gol) == 'IV/d' ? 'selected' : '' }}>IV/d</option>
+                                        <option value="IV/e" {{ old('gol', $user->gol) == 'IV/e' ? 'selected' : '' }}>IV/e</option>
                                     </select>
 
                                     @error('gol')
@@ -394,9 +381,9 @@ $(function () {
                                     <select id="jenis_jabatan" name="jenis_jabatan" 
                                             class="form-control @error('jenis_jabatan') is-invalid @enderror">
                                         <option value="">-- Pilih Jenis Jabatan --</option>
-                                        <option value="Struktural" {{ old('jenis_jabatan') == 'Struktural' ? 'selected' : '' }}>Struktural</option>
-                                        <option value="Fungsional" {{ old('jenis_jabatan') == 'Fungsional' ? 'selected' : '' }}>Fungsional</option>
-                                        <option value="Pelaksana" {{ old('jenis_jabatan') == 'Pelaksana' ? 'selected' : '' }}>Pelaksana</option>
+                                        <option value="Struktural" {{ old('jenis_jabatan', $user->jenis_jabatan) == 'Struktural' ? 'selected' : '' }}>Struktural</option>
+                                        <option value="Fungsional" {{ old('jenis_jabatan', $user->jenis_jabatan) == 'Fungsional' ? 'selected' : '' }}>Fungsional</option>
+                                        <option value="Pelaksana" {{ old('jenis_jabatan', $user->jenis_jabatan) == 'Pelaksana' ? 'selected' : '' }}>Pelaksana</option>
                                     </select>
 
                                     @error('jenis_jabatan')
@@ -406,7 +393,7 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="jabatan_nama" class="form-label">Jabatan Nama<span style="color: red;">*</span></label>
-                                    <input type="text" id="jabatan_nama" name="jabatan_nama" class="form-control @error('jabatan_nama') is-invalid @enderror" value="{{ old('jabatan_nama') }}">
+                                    <input type="text" id="jabatan_nama" name="jabatan_nama" class="form-control @error('jabatan_nama') is-invalid @enderror" value="{{ old('jabatan_nama', $user->jabatan_nama) }}">
                                     @error('jabatan_nama')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
@@ -417,16 +404,16 @@ $(function () {
                                     <select id="tingkat_pendidikan" name="tingkat_pendidikan" 
                                             class="form-control @error('tingkat_pendidikan') is-invalid @enderror">
                                         <option value="">-- Pilih Tingkat Pendidikan --</option>
-                                        <option value="SD" {{ old('tingkat_pendidikan') == 'SD' ? 'selected' : '' }}>SD</option>
-                                        <option value="SMP" {{ old('tingkat_pendidikan') == 'SMP' ? 'selected' : '' }}>SMP</option>
-                                        <option value="SMA/SMK" {{ old('tingkat_pendidikan') == 'SMA/SMK' ? 'selected' : '' }}>SMA/SMK</option>
-                                        <option value="D1" {{ old('tingkat_pendidikan') == 'D1' ? 'selected' : '' }}>Diploma I (D1)</option>
-                                        <option value="D2" {{ old('tingkat_pendidikan') == 'D2' ? 'selected' : '' }}>Diploma II (D2)</option>
-                                        <option value="D3" {{ old('tingkat_pendidikan') == 'D3' ? 'selected' : '' }}>Diploma III (D3)</option>
-                                        <option value="D4" {{ old('tingkat_pendidikan') == 'D4' ? 'selected' : '' }}>Diploma IV (D4)</option>
-                                        <option value="S1" {{ old('tingkat_pendidikan') == 'S1' ? 'selected' : '' }}>Sarjana (S1)</option>
-                                        <option value="S2" {{ old('tingkat_pendidikan') == 'S2' ? 'selected' : '' }}>Magister (S2)</option>
-                                        <option value="S3" {{ old('tingkat_pendidikan') == 'S3' ? 'selected' : '' }}>Doktor (S3)</option>
+                                        <option value="SD" {{ old('tingkat_pendidikan', $user->tingkat_pendidikan) == 'SD' ? 'selected' : '' }}>SD</option>
+                                        <option value="SMP" {{ old('tingkat_pendidikan', $user->tingkat_pendidikan) == 'SMP' ? 'selected' : '' }}>SMP</option>
+                                        <option value="SMA/SMK" {{ old('tingkat_pendidikan', $user->tingkat_pendidikan) == 'SMA/SMK' ? 'selected' : '' }}>SMA/SMK</option>
+                                        <option value="D1" {{ old('tingkat_pendidikan', $user->tingkat_pendidikan) == 'D1' ? 'selected' : '' }}>Diploma I (D1)</option>
+                                        <option value="D2" {{ old('tingkat_pendidikan', $user->tingkat_pendidikan) == 'D2' ? 'selected' : '' }}>Diploma II (D2)</option>
+                                        <option value="D3" {{ old('tingkat_pendidikan', $user->tingkat_pendidikan) == 'D3' ? 'selected' : '' }}>Diploma III (D3)</option>
+                                        <option value="D4" {{ old('tingkat_pendidikan', $user->tingkat_pendidikan) == 'D4' ? 'selected' : '' }}>Diploma IV (D4)</option>
+                                        <option value="S1" {{ old('tingkat_pendidikan', $user->tingkat_pendidikan) == 'S1' ? 'selected' : '' }}>Sarjana (S1)</option>
+                                        <option value="S2" {{ old('tingkat_pendidikan', $user->tingkat_pendidikan) == 'S2' ? 'selected' : '' }}>Magister (S2)</option>
+                                        <option value="S3" {{ old('tingkat_pendidikan', $user->tingkat_pendidikan) == 'S3' ? 'selected' : '' }}>Doktor (S3)</option>
                                     </select>
 
                                     @error('tingkat_pendidikan')
@@ -436,16 +423,8 @@ $(function () {
 
                                 <div class="mb-3">
                                     <label for="pend" class="form-label">Pendidikan<span style="color: red;">*</span></label>
-                                    <input type="text" id="pend" name="pend" class="form-control @error('pend') is-invalid @enderror" value="{{ old('pend') }}">
+                                    <input type="text" id="pend" name="pend" class="form-control @error('pend') is-invalid @enderror" value="{{ old('pend', $user->pend) }}">
                                     @error('pend')
-                                        <div class="text-danger mt-2">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="password" class="form-label">Password<span style="color: red;">*</span></label>
-                                    <input type="text" id="password" name="password" class="form-control @error('password') is-invalid @enderror">
-                                    @error('password')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -459,7 +438,7 @@ $(function () {
                                             name="role" 
                                             id="Admin" 
                                             value="Admin" 
-                                            {{ old('role') == 'Admin' ? 'checked' : '' }}>
+                                            {{ old('role', $user->role) == 'Admin' ? 'checked' : '' }}>
                                         <label class="form-check-label" for="Admin">Admin</label>
                                     </div>
 
@@ -469,7 +448,7 @@ $(function () {
                                             name="role" 
                                             id="PNS" 
                                             value="PNS" 
-                                            {{ old('role') == 'PNS' ? 'checked' : '' }}>
+                                            {{ old('role', $user->role) == 'PNS' ? 'checked' : '' }}>
                                         <label class="form-check-label" for="PNS">PNS</label>
                                     </div>
 
@@ -479,7 +458,7 @@ $(function () {
                                             name="role" 
                                             id="Atasan" 
                                             value="Atasan" 
-                                            {{ old('role') == 'Atasan' ? 'checked' : '' }}>
+                                            {{ old('role', $user->role) == 'Atasan' ? 'checked' : '' }}>
                                         <label class="form-check-label" for="Atasan">Atasan</label>
                                     </div>
 
@@ -494,7 +473,11 @@ $(function () {
                                     @error('foto')
                                         <div class="text-danger mt-2">{{ $message }}</div>
                                     @enderror
-                                    <img id="imagePreview" src="" alt="Image Preview" style="max-width: 200px; display: none; margin-top: 15px;">
+
+                                    <img id="imagePreview" 
+                                        src="{{ $user->foto ? asset('storage/foto/' . $user->foto) : '' }}" 
+                                        alt="Image Preview" 
+                                        style="max-width: 200px; {{ $user->foto ? '' : 'display: none;' }} margin-top: 15px;">
                                 </div>
 
                                  </div>

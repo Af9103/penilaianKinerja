@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -116,11 +117,94 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        // Hapus foto jika ada
         if ($user->foto) {
-            Storage::delete($user->foto);
+            Storage::disk('public')->delete('foto/' . $user->foto);
         }
-        User::destroy($user->id);
-        return redirect('pegawai/')->with('success', 'pegawai berhasil dihapus!');
+
+        // Hapus data penilaian terkait
+        Penilaian::where('user_id', $user->id)->delete();
+
+        // Hapus data tmt_pns terkait
+        TmtPns::where('user_id', $user->id)->delete();
+
+        // Hapus user
+        $user->delete();
+
+        return redirect('pegawai/')->with('success', 'Pegawai dan data terkait berhasil dihapus!');
+    }
+
+    public function edit($id)
+    {
+
+        $user = User::find($id); // Mencari data berdasarkan ID
+        if (!$user) {
+            // Jika data tidak ditemukan, bisa memberikan notifikasi atau redirect
+            return redirect()->back()->with('error', 'Data tidak ditemukan');
+        }
+
+        // Ambil data pencapaian yang sudah ada berdasarkan produksi_id
+        $existingData = User::where('id', $user->id)->get();
+
+        return view('User.edit', [
+            'tittle' => 'Profile ' . $user->nama . ' | SIPEKA',
+            'user' => $user,
+            'existingData' => $existingData,
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validatedData = $request->validate([
+            'nip' => ['required', Rule::unique('users')->ignore($user->id)],
+            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+            'nik' => ['required', 'digits:16', Rule::unique('users')->ignore($user->id)],
+            'nama' => 'required|string|max:50',
+            'gelar_depan' => 'nullable|string|max:7',
+            'gelar_belakang' => 'nullable|string|max:10',
+            'tempat_lahir' => 'required|string|max:20',
+            'tanggal_lahir' => 'required|date',
+            'jenis_kelamin' => 'required|in:L,P',
+            'agama' => 'required|in:Islam,Kristen,Katolik,Hindu,Buddha,Khonghucu',
+            'status_pernikahan' => 'required|in:Belum Menikah,Menikah,Cerai',
+            'tgl_sk_cpns' => 'required|date',
+            'no_hp' => 'required',
+            'status_pns' => 'required|in:C,P',
+            'no_sk_cpns' => 'required',
+            'tmt_cpns' => 'required|date',
+            'gol' => 'required|in:I/a,I/b,I/c,I/d,II/a,II/b,II/c,II/d,III/a,III/b,III/c,III/d,IV/a,IV/b,IV/c,IV/d,IV/e',
+            'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
+            'jabatan_nama' => 'required',
+            'tingkat_pendidikan' => 'required|in:SD,SMP,SMA/SMK,D1,D2,D3,D4,S1,S2,S3',
+            'pend' => 'required',
+            'role' => 'required',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        // Format tanggal
+        $validatedData['tanggal_lahir'] = Carbon::createFromFormat('m/d/Y', $request->tanggal_lahir)->format('Y-m-d');
+        $validatedData['tgl_sk_cpns'] = Carbon::createFromFormat('m/d/Y', $request->tgl_sk_cpns)->format('Y-m-d');
+        $validatedData['tmt_cpns'] = Carbon::createFromFormat('m/d/Y', $request->tmt_cpns)->format('Y-m-d');
+
+        // Update foto hanya jika ada file baru
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $newFileName = basename($file->store('foto', 'public'));
+
+            // Hapus file lama jika ada
+            if ($user->foto && Storage::disk('public')->exists('foto/' . $user->foto)) {
+                Storage::disk('public')->delete('foto/' . $user->foto);
+            }
+
+            $validatedData['foto'] = $newFileName;
+        }
+
+        // Update user
+        $user->update($validatedData);
+
+        return redirect('/pegawai')->with('success', 'Pegawai berhasil diperbaharui!');
     }
 
     public function profile($id)
